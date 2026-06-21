@@ -1,0 +1,41 @@
+name: Update World Cup Calendar
+
+on:
+  schedule:
+    # Every 3 hours. 2 API calls per run (fixtures + standings) x 8 runs/day
+    # = 16 calls/day, comfortably under API-Football's free-tier 100/day cap.
+    # Tighten this during matchdays (e.g. '0 */1 * * *') if you want faster
+    # turnaround, but watch your daily quota if you do.
+    - cron: '0 */3 * * *'
+  workflow_dispatch: {}   # lets you trigger a manual refresh from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update-calendar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate calendar
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/generate_calendar.py
+
+      - name: Commit and push if the calendar changed
+        run: |
+          git config user.name "world-cup-calendar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/world-cup-2026-group-stage.ics
+          git diff --staged --quiet || git commit -m "Auto-update calendar: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
