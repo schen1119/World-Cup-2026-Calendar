@@ -27,8 +27,8 @@ from collections import defaultdict
 
 import requests
 
-API_HOST = "api-football-v1.p.rapidapi.com"
-BASE_URL = f"https://{API_HOST}/v3"
+API_HOST = "v3.football.api-sports.io"
+BASE_URL = f"https://{API_HOST}/"
 LEAGUE_ID = 1          # API-Football's league ID for "World Cup" -- verify before relying on it
 SEASON = 2026
 OUTPUT_PATH = "docs/world-cup-2026-group-stage.ics"   # served via GitHub Pages from /docs
