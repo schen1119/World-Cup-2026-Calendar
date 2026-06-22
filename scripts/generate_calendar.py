@@ -191,11 +191,15 @@ def escape_ics_text(text):
     )
 
 
+LIVE_STATUSES = {"IN_PLAY", "PAUSED", "HALFTIME"}
+
+
 def build_standings_page(matches, team_group, as_of_str):
     """
-    Returns an HTML string showing the current (fully up-to-date) group
-    standings table for all groups. Designed to be served as docs/index.html
-    via GitHub Pages alongside the .ics feed.
+    Returns an HTML string with:
+      1. Today's group-stage matches and their current scores (Eastern time).
+      2. Full group standings (all groups, fully up-to-date).
+    Designed to be served as docs/index.html via GitHub Pages.
     """
     # Diagnostic: show what stage labels the API is actually returning
     stage_counts = {}
@@ -204,13 +208,83 @@ def build_standings_page(matches, team_group, as_of_str):
         stage_counts[s] = stage_counts.get(s, 0) + 1
     print(f"  [HTML] Stage labels in API response: {stage_counts}")
 
-    # Accept any stage label that looks like the group stage.
-    # football-data.org has used both "GROUP_STAGE" and "Groups" in the past.
     def is_group_stage(match):
         stage = (match.get("stage") or "").upper()
         return "GROUP" in stage
 
-    # Compute final standings from ALL finished matches
+    # "Today" in US Eastern time — matches that kick off on this calendar date
+    et_now = now_eastern()
+    today_et = et_now.date()
+    eastern_tz = et_now.tzinfo
+
+    def kickoff_et(match):
+        utc = datetime.datetime.fromisoformat(match["utcDate"].replace("Z", "+00:00"))
+        return utc.astimezone(eastern_tz)
+
+    # ------------------------------------------------------------------ #
+    # Section 1 – today's matches
+    # ------------------------------------------------------------------ #
+    today_matches = [
+        m for m in matches
+        if is_group_stage(m) and kickoff_et(m).date() == today_et
+    ]
+    today_matches.sort(key=lambda m: kickoff_et(m))
+
+    def match_card_html(match):
+        home = match["homeTeam"]["name"]
+        away = match["awayTeam"]["name"]
+        status = match.get("status", "")
+        score_data = (match.get("score") or {})
+        ft = (score_data.get("fullTime") or {})
+        current = (score_data.get("currentScore") or score_data.get("halfTime") or {})
+        raw_group = match.get("group") or team_group.get(match["homeTeam"]["id"]) or ""
+        group_lbl = f"Group {group_letter(raw_group)}" if raw_group else ""
+        venue = match.get("venue") or ""
+        ko = kickoff_et(match)
+        time_str = ko.strftime("%-I:%M %p ET")
+
+        if status in FINISHED_STATUSES:
+            hg, ag = ft.get("home", "–"), ft.get("away", "–")
+            score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
+            badge = '<span class="badge badge-ft">FT</span>'
+        elif status in LIVE_STATUSES:
+            hg = current.get("home", "–")
+            ag = current.get("away", "–")
+            score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
+            badge = '<span class="badge badge-live"><span class="live-dot"></span>Live</span>'
+        else:
+            score_html = '<span class="score-dash">vs</span>'
+            badge = '<span class="badge badge-upcoming">Upcoming</span>'
+
+        venue_part = f' &nbsp;·&nbsp; {venue}' if venue else ""
+        return f"""        <div class="match-card">
+          <div class="match-meta-top">{group_lbl}{venue_part}</div>
+          <div class="match-row">
+            <span class="team-name">{home}</span>
+            <div class="score-box">{score_html}</div>
+            <span class="team-name team-away">{away}</span>
+          </div>
+          <div class="match-meta-bottom">
+            <span class="match-time">{time_str}</span>
+            {badge}
+          </div>
+        </div>"""
+
+    if today_matches:
+        cards_html = "\n".join(match_card_html(m) for m in today_matches)
+        date_label = et_now.strftime("%A, %B %-d")
+        today_section_html = f"""  <section class="today-section">
+    <h2 class="section-label">Today&rsquo;s matches &mdash; {date_label}</h2>
+    <div class="matches-grid">
+{cards_html}
+    </div>
+  </section>"""
+    else:
+        today_section_html = ""
+
+    # ------------------------------------------------------------------ #
+    # Section 2 – standings (computed from all finished matches)
+    # ------------------------------------------------------------------ #
     by_group = defaultdict(lambda: defaultdict(new_team_stats))
 
     for match in matches:
@@ -303,10 +377,9 @@ def build_standings_page(matches, team_group, as_of_str):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIFA World Cup 2026 — Group Stage Standings</title>
+  <title>FIFA World Cup 2026 &mdash; Group Stage</title>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0a0f1e;
@@ -314,29 +387,18 @@ def build_standings_page(matches, team_group, as_of_str):
       min-height: 100vh;
       padding: 2rem 1rem 4rem;
     }}
-
-    header {{
+    .page-header {{
       text-align: center;
       margin-bottom: 2.5rem;
     }}
-
-    header h1 {{
+    .page-header h1 {{
       font-size: clamp(1.4rem, 4vw, 2.2rem);
       font-weight: 700;
       letter-spacing: 0.02em;
       color: #ffffff;
     }}
-
-    header h1 span {{
-      color: #f5a623;
-    }}
-
-    .updated {{
-      margin-top: 0.5rem;
-      font-size: 0.8rem;
-      color: #7a8099;
-    }}
-
+    .page-header h1 span {{ color: #f5a623; }}
+    .updated {{ margin-top: 0.5rem; font-size: 0.8rem; color: #7a8099; }}
     .subscribe {{
       display: inline-block;
       margin-top: 1.2rem;
@@ -348,25 +410,111 @@ def build_standings_page(matches, team_group, as_of_str):
       font-size: 0.85rem;
       font-weight: 600;
       letter-spacing: 0.03em;
-      transition: background 0.15s;
     }}
-    .subscribe:hover {{ background: #1558cc; }}
-
+    .section-label {{
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #7a8099;
+      margin-bottom: 1rem;
+    }}
+    .today-section {{
+      max-width: 1200px;
+      margin: 0 auto 2.5rem;
+    }}
+    .matches-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+      gap: 1rem;
+    }}
+    .match-card {{
+      background: #131929;
+      border: 1px solid #1e2740;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }}
+    .match-meta-top {{
+      font-size: 0.72rem;
+      color: #7a8099;
+      margin-bottom: 0.6rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
+    .match-row {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+    }}
+    .team-name {{
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e8eaf0;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
+    .team-away {{ text-align: right; }}
+    .score-box {{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }}
+    .score {{
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ffffff;
+      min-width: 1.1rem;
+      text-align: center;
+    }}
+    .score-sep {{ font-size: 1rem; color: #4a5270; }}
+    .score-dash {{ font-size: 0.85rem; color: #4a5270; padding: 0 0.25rem; }}
+    .match-meta-bottom {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }}
+    .match-time {{ font-size: 0.75rem; color: #7a8099; }}
+    .badge {{
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }}
+    .badge-live {{
+      background: rgba(220, 38, 38, 0.15);
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }}
+    .live-dot {{
+      width: 6px; height: 6px;
+      background: #f87171;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }}
+    .badge-ft {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
+    .badge-upcoming {{ background: rgba(255,255,255,0.04); color: #4a5270; }}
+    .standings-section {{ max-width: 1200px; margin: 0 auto; }}
     .grid {{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
       gap: 1.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
     }}
-
     .group {{
       background: #131929;
       border: 1px solid #1e2740;
       border-radius: 10px;
       overflow: hidden;
     }}
-
     .group h2 {{
       padding: 0.75rem 1rem;
       font-size: 0.9rem;
@@ -377,17 +525,8 @@ def build_standings_page(matches, team_group, as_of_str):
       background: #0e1424;
       border-bottom: 1px solid #1e2740;
     }}
-
-    table {{
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }}
-
-    thead tr {{
-      background: #0e1424;
-    }}
-
+    table {{ width: 100%; border-collapse: collapse; font-size: 0.85rem; }}
+    thead tr {{ background: #0e1424; }}
     th {{
       padding: 0.45rem 0.5rem;
       text-align: center;
@@ -399,20 +538,13 @@ def build_standings_page(matches, team_group, as_of_str):
       cursor: default;
     }}
     th.team {{ text-align: left; padding-left: 0.75rem; }}
-
-    td {{
-      padding: 0.5rem 0.5rem;
-      text-align: center;
-      border-top: 1px solid #1a2035;
-    }}
+    td {{ padding: 0.5rem 0.5rem; text-align: center; border-top: 1px solid #1a2035; }}
     td.team {{ text-align: left; padding-left: 0.75rem; font-weight: 500; }}
     td.rank {{ color: #7a8099; font-size: 0.75rem; }}
     td.pts  {{ font-weight: 700; color: #ffffff; }}
     td.gd   {{ color: #a0aabf; }}
-
     tr.row.qualifier {{ background: rgba(26, 110, 245, 0.08); }}
     tr.row:hover     {{ background: #1a2240; }}
-
     .no-data {{
       grid-column: 1 / -1;
       text-align: center;
@@ -420,9 +552,9 @@ def build_standings_page(matches, team_group, as_of_str):
       color: #4a5270;
       font-size: 0.9rem;
     }}
-
-    .qualifier-note {{      text-align: center;
-      margin-top: 1rem;
+    .qualifier-note {{
+      text-align: center;
+      margin-top: 1.5rem;
       font-size: 0.72rem;
       color: #4a5270;
     }}
@@ -435,7 +567,6 @@ def build_standings_page(matches, team_group, as_of_str):
       margin-right: 4px;
       vertical-align: middle;
     }}
-
     footer {{
       text-align: center;
       margin-top: 3rem;
@@ -445,28 +576,34 @@ def build_standings_page(matches, team_group, as_of_str):
   </style>
 </head>
 <body>
-  <header>
+
+  <div class="page-header">
     <h1>FIFA World Cup 2026 <span>Group Stage</span></h1>
-    <p class="updated">Last updated: {as_of_str}</p>
+    <p class="updated">Last updated: {as_of_str} &nbsp;&middot;&nbsp; Scores update hourly</p>
     <a class="subscribe"
        href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics">
       &#x1F4C5; Subscribe to Calendar
     </a>
-  </header>
+  </div>
 
-  <div class="grid">
+{today_section_html}
+  <div class="standings-section">
+    <p class="section-label">Group standings</p>
+    <div class="grid">
 {groups_html}
+    </div>
   </div>
 
   <p class="qualifier-note">
     <span></span>Top 2 teams in each group advance to the Round of 32.
-    Tiebreaker order: points → goal difference → goals scored → head-to-head.
+    Tiebreaker: points &rarr; goal difference &rarr; goals scored &rarr; head-to-head.
   </p>
 
   <footer>
     Data via <a href="https://www.football-data.org" style="color:#4a5270">football-data.org</a>
-    &nbsp;·&nbsp; Auto-updated via GitHub Actions
+    &nbsp;&middot;&nbsp; Auto-updated via GitHub Actions
   </footer>
+
 </body>
 </html>
 """
