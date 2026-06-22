@@ -8,16 +8,10 @@ that specific kickoff (computed progressively from finished results, not just
 regenerated over and over throughout the tournament.
 
 Data source: football-data.org API v4 (https://www.football-data.org/).
-Requires an API key (their "token") in the FOOTBALL_DATA_API_KEY environment
-variable.
+Requires an API key in the FOOTBALL_DATA_API_KEY environment variable.
 
 USAGE:
     FOOTBALL_DATA_API_KEY=xxxx python3 scripts/generate_calendar.py
-
-NOTE: COMPETITION_CODE below ("WC") is football-data.org's stable code for
-the FIFA World Cup. Worth a quick sanity check against
-https://api.football-data.org/v4/competitions on your own account to confirm
-your plan tier includes it before relying on this long-term.
 """
 
 import os
@@ -29,12 +23,15 @@ from collections import defaultdict
 import requests
 
 BASE_URL = "https://api.football-data.org/v4"
-COMPETITION_CODE = "WC"     # football-data.org's code for "FIFA World Cup"
-SEASON = 2026
-OUTPUT_PATH = "docs/world-cup-2026-group-stage.ics"   # served via GitHub Pages from /docs
+COMPETITION_CODE = "WC"
+OUTPUT_PATH = "docs/world-cup-2026-group-stage.ics"
 
-# football-data.org match statuses considered "finished"
 FINISHED_STATUSES = {"FINISHED", "AWARDED"}
+
+# Candidate season years to try if the primary one returns nothing.
+# football-data.org sometimes keys a tournament by the year it starts
+# rather than the year the final is played (which would be 2026).
+SEASON_CANDIDATES = [2026, 2025]
 
 
 def get_api_key():
@@ -47,16 +44,47 @@ def get_api_key():
 def api_get(path, params, api_key):
     headers = {"X-Auth-Token": api_key}
     resp = requests.get(f"{BASE_URL}/{path}", headers=headers, params=params, timeout=30)
+    if resp.status_code == 403:
+        # Return None rather than crashing -- caller decides how to handle
+        print(f"  WARNING: 403 on /{path} (plan may not include this endpoint or season) -- skipping.")
+        return None
     if resp.status_code == 429:
-        sys.exit("ERROR: Hit football-data.org's rate limit (429). Try again shortly.")
+        sys.exit("ERROR: Rate limit hit (429). Wait a minute and retry.")
     resp.raise_for_status()
     return resp.json()
 
 
-def fetch_team_to_group(api_key):
-    """Returns {team_id: 'Group A', ...} from the standings endpoint.
-    Used as a fallback when a match object doesn't carry its own 'group' field."""
-    data = api_get(f"competitions/{COMPETITION_CODE}/standings", {"season": SEASON}, api_key)
+def find_working_season(api_key):
+    """Try each season candidate and return (season, matches_data) for the
+    first one that yields group-stage matches. Exits if none work."""
+    for season in SEASON_CANDIDATES:
+        print(f"  Trying season={season}...")
+        data = api_get(f"competitions/{COMPETITION_CODE}/matches", {"season": season}, api_key)
+        if data is None:
+            continue
+        matches = data.get("matches", [])
+        group_matches = [m for m in matches if m.get("stage") == "GROUP_STAGE"]
+        if group_matches:
+            print(f"  Found {len(group_matches)} group-stage matches under season={season}.")
+            return season, matches
+        else:
+            print(f"  No GROUP_STAGE matches found under season={season}.")
+    sys.exit(
+        "ERROR: Could not find group-stage match data under any season candidate. "
+        "Check that your API plan includes the World Cup competition, or inspect "
+        f"https://api.football-data.org/v4/competitions/{COMPETITION_CODE}/matches manually."
+    )
+
+
+def fetch_team_to_group_from_standings(api_key, season):
+    """Returns {team_id: 'GROUP_A', ...} from the /standings endpoint.
+    Returns {} (empty dict) gracefully if the endpoint is not accessible on
+    the current plan -- group membership is derived from match data instead."""
+    print("  Fetching /standings...")
+    data = api_get(f"competitions/{COMPETITION_CODE}/standings", {"season": season}, api_key)
+    if data is None:
+        print("  Standings endpoint not available on this plan -- will derive groups from match data instead.")
+        return {}
     team_group = {}
     for group_table in data.get("standings", []):
         grp = group_table.get("group")
@@ -64,12 +92,26 @@ def fetch_team_to_group(api_key):
             continue
         for row in group_table.get("table", []):
             team_group[row["team"]["id"]] = grp
+    if not team_group:
+        print("  Standings returned no group data -- will derive groups from match data instead.")
     return team_group
 
 
-def fetch_matches(api_key):
-    data = api_get(f"competitions/{COMPETITION_CODE}/matches", {"season": SEASON}, api_key)
-    return data.get("matches", [])
+def derive_team_to_group_from_matches(matches):
+    """Fallback: build {team_id: group} directly from match objects.
+    football-data.org includes a 'group' field on each GROUP_STAGE match."""
+    team_group = {}
+    for m in matches:
+        if m.get("stage") != "GROUP_STAGE":
+            continue
+        grp = m.get("group")
+        if not grp:
+            continue
+        for side in ("homeTeam", "awayTeam"):
+            tid = m[side]["id"]
+            if tid not in team_group:
+                team_group[tid] = grp
+    return team_group
 
 
 def group_letter(group_name):
@@ -98,13 +140,13 @@ def standings_block(group, stats, md_label, as_of_str):
                 f"{i}. {team} \u2014 {s['W']}W {s['D']}D {s['L']}L \u2014 "
                 f"{s['Pts']} {pt_word} (GD {gd_str}, {s['GF']} GF)"
             )
-    lines.append(f"(Live snapshot as of {as_of_str} \u2014 reflects results up to this match's kickoff)")
+    lines.append(
+        f"(Live snapshot as of {as_of_str} \u2014 reflects results up to this match's kickoff)"
+    )
     return "\n".join(lines)
 
 
 def stable_uid(group, home, away):
-    """Deterministic UID so re-running the script updates existing calendar
-    events instead of creating duplicates for subscribers."""
     key = f"{group}-{home}-{away}".lower().replace(" ", "")
     h = hashlib.md5(key.encode()).hexdigest()[:16]
     return f"{h}@worldcup2026-group-stage"
@@ -115,7 +157,6 @@ def fmt_ics_dt(dt):
 
 
 def escape_ics_text(text):
-    """Escape special characters per RFC 5545 section 3.3.11."""
     return (
         text.replace("\\", "\\\\")
         .replace(";", "\\;")
@@ -129,12 +170,11 @@ def build_calendar(matches, team_group, as_of_str):
 
     for match in matches:
         if match.get("stage") != "GROUP_STAGE":
-            continue  # skip knockout rounds entirely
+            continue
 
         home = match["homeTeam"]
         away = match["awayTeam"]
 
-        # prefer the match's own group field; fall back to the standings-derived map
         raw_group = match.get("group")
         if not raw_group:
             raw_group = team_group.get(home["id"]) or team_group.get(away["id"])
@@ -155,7 +195,9 @@ def build_calendar(matches, team_group, as_of_str):
         goals_away = full_time.get("away")
         score = (
             (goals_home, goals_away)
-            if status in FINISHED_STATUSES and goals_home is not None and goals_away is not None
+            if status in FINISHED_STATUSES
+            and goals_home is not None
+            and goals_away is not None
             else None
         )
 
@@ -221,7 +263,6 @@ def build_calendar(matches, team_group, as_of_str):
                 ]
                 event_count += 1
 
-            # apply this matchday's results before computing the next matchday's snapshot
             for m in md_matches:
                 if m["score"] is not None:
                     hg, ag = m["score"]
@@ -247,27 +288,35 @@ def main():
     api_key = get_api_key()
     as_of_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-    print("Fetching group assignments from /standings...")
-    team_group = fetch_team_to_group(api_key)
+    print("Step 1: Finding the correct season and fetching matches...")
+    season, matches = find_working_season(api_key)
+
+    print("Step 2: Fetching group assignments...")
+    team_group = fetch_team_to_group_from_standings(api_key, season)
     if not team_group:
-        sys.exit("ERROR: No standings data returned -- aborting without touching the existing file.")
+        print("  Falling back to deriving group assignments from match data...")
+        team_group = derive_team_to_group_from_matches(matches)
+    if not team_group:
+        sys.exit(
+            "ERROR: Could not determine group assignments from either standings or match data. "
+            "The API may not be returning group information for this competition/season yet."
+        )
+    print(f"  Found {len(set(team_group.values()))} groups covering {len(team_group)} teams.")
 
-    print("Fetching matches from /matches...")
-    matches = fetch_matches(api_key)
-    if not matches:
-        sys.exit("ERROR: No matches returned -- aborting without touching the existing file.")
-
-    print(f"Building calendar from {len(matches)} matches across {len(set(team_group.values()))} groups...")
+    print("Step 3: Building calendar...")
     ics_text, event_count = build_calendar(matches, team_group, as_of_str)
 
     if event_count == 0:
-        sys.exit("ERROR: Built 0 events -- something looks wrong upstream, aborting without writing.")
+        sys.exit(
+            "ERROR: Built 0 events. Group-stage matches were found but could not be "
+            "processed -- check that the 'group' field is present on match objects."
+        )
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w") as f:
         f.write(ics_text)
 
-    print(f"Wrote {event_count} events to {OUTPUT_PATH}")
+    print(f"Done. Wrote {event_count} events to {OUTPUT_PATH} (season={season}).")
 
 
 if __name__ == "__main__":
