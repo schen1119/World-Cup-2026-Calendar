@@ -2,11 +2,12 @@ name: Update World Cup Calendar
 
 on:
   schedule:
-    # Every 3 hours. 2 API calls per run (fixtures + standings) x 8 runs/day
-    # = 16 calls/day, comfortably under API-Football's free-tier 100/day cap.
-    # Tighten this during matchdays (e.g. '0 */1 * * *') if you want faster
-    # turnaround, but watch your daily quota if you do.
-    - cron: '0 */3 * * *'
+    # Hourly. football-data.org's free tier is 10 requests/minute, and this
+    # job makes 2 calls per run (matches + standings) -- plenty of headroom
+    # even at this frequency. Go more frequent if you want (e.g. every 15
+    # min: '*/15 * * * *'); the rate limit here just isn't a binding
+    # constraint the way it was on the API-Football free tier.
+    - cron: '0 * * * *'
   workflow_dispatch: {}   # lets you trigger a manual refresh from the Actions tab
 
 permissions:
@@ -29,7 +30,7 @@ jobs:
 
       - name: Generate calendar
         env:
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
         run: python scripts/generate_calendar.py
 
       - name: Commit and push if the calendar changed
