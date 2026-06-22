@@ -1,14 +1,17 @@
 name: Update World Cup Calendar
 
+# Triggered externally via cron-job.org (or any HTTP cron service) hitting:
+#   POST https://api.github.com/repos/YOUR-USERNAME/YOUR-REPO/actions/workflows/update-calendar.yml/dispatches
+# with body: {"ref":"main"}
+# and header: Authorization: Bearer YOUR_GITHUB_PAT
+#
+# Why not GitHub's built-in schedule trigger? GitHub freely admits scheduled
+# workflows can be delayed by hours or skipped entirely on inactive repos.
+# An external HTTP cron service is far more reliable for hourly updates.
+# See README for setup instructions.
+
 on:
-  schedule:
-    # Hourly. football-data.org's free tier is 10 requests/minute, and this
-    # job makes 2 calls per run (matches + standings) -- plenty of headroom
-    # even at this frequency. Go more frequent if you want (e.g. every 15
-    # min: '*/15 * * * *'); the rate limit here just isn't a binding
-    # constraint the way it was on the API-Football free tier.
-    - cron: '*/30 * * * *'
-  workflow_dispatch: {}   # lets you trigger a manual refresh from the Actions tab
+  workflow_dispatch: {}
 
 permissions:
   contents: write
