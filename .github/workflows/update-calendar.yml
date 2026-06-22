@@ -7,7 +7,7 @@ on:
     # even at this frequency. Go more frequent if you want (e.g. every 15
     # min: '*/15 * * * *'); the rate limit here just isn't a binding
     # constraint the way it was on the API-Football free tier.
-    - cron: '0 * * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch: {}   # lets you trigger a manual refresh from the Actions tab
 
 permissions:
