@@ -244,12 +244,13 @@ def build_standings_page(matches, team_group, as_of_str):
         time_str = ko.strftime("%-I:%M %p ET")
 
         if status in FINISHED_STATUSES:
-            hg, ag = ft.get("home", "–"), ft.get("away", "–")
+            hg = ft.get("home") if ft.get("home") is not None else 0
+            ag = ft.get("away") if ft.get("away") is not None else 0
             score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
             badge = '<span class="badge badge-ft">FT</span>'
         elif status in LIVE_STATUSES:
-            hg = current.get("home", "–")
-            ag = current.get("away", "–")
+            hg = current.get("home") if current.get("home") is not None else 0
+            ag = current.get("away") if current.get("away") is not None else 0
             score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
             badge = '<span class="badge badge-live"><span class="live-dot"></span>Live</span>'
         else:
@@ -579,7 +580,7 @@ def build_standings_page(matches, team_group, as_of_str):
 
   <div class="page-header">
     <h1>FIFA World Cup 2026 <span>Group Stage</span></h1>
-    <p class="updated">Last updated: {as_of_str} &nbsp;&middot;&nbsp; Scores update hourly</p>
+    <p class="updated">Last updated: {as_of_str} &nbsp;&middot;&nbsp; Scores update approximately every 5 minutes</p>
     <a class="subscribe"
        href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics">
       &#x1F4C5; Subscribe to Calendar
