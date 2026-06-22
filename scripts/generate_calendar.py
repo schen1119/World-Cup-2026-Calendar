@@ -89,7 +89,7 @@ def find_working_season(api_key):
         if data is None:
             continue
         matches = data.get("matches", [])
-        group_matches = [m for m in matches if m.get("stage") == "GROUP_STAGE"]
+        group_matches = [m for m in matches if "GROUP" in (m.get("stage") or "").upper()]
         if group_matches:
             print(f"  Found {len(group_matches)} group-stage matches under season={season}.")
             return season, matches
@@ -128,7 +128,7 @@ def derive_team_to_group_from_matches(matches):
     football-data.org includes a 'group' field on each GROUP_STAGE match."""
     team_group = {}
     for m in matches:
-        if m.get("stage") != "GROUP_STAGE":
+        if "GROUP" not in (m.get("stage") or "").upper():
             continue
         grp = m.get("group")
         if not grp:
@@ -197,11 +197,24 @@ def build_standings_page(matches, team_group, as_of_str):
     standings table for all groups. Designed to be served as docs/index.html
     via GitHub Pages alongside the .ics feed.
     """
+    # Diagnostic: show what stage labels the API is actually returning
+    stage_counts = {}
+    for m in matches:
+        s = m.get("stage", "MISSING")
+        stage_counts[s] = stage_counts.get(s, 0) + 1
+    print(f"  [HTML] Stage labels in API response: {stage_counts}")
+
+    # Accept any stage label that looks like the group stage.
+    # football-data.org has used both "GROUP_STAGE" and "Groups" in the past.
+    def is_group_stage(match):
+        stage = (match.get("stage") or "").upper()
+        return "GROUP" in stage
+
     # Compute final standings from ALL finished matches
     by_group = defaultdict(lambda: defaultdict(new_team_stats))
 
     for match in matches:
-        if match.get("stage") != "GROUP_STAGE":
+        if not is_group_stage(match):
             continue
         home = match["homeTeam"]
         away = match["awayTeam"]
@@ -209,9 +222,11 @@ def build_standings_page(matches, team_group, as_of_str):
         if not raw_group:
             continue
         letter = group_letter(raw_group)
-        # ensure both teams exist in the table even if unplayed
-        by_group[letter][home["name"]]
-        by_group[letter][away["name"]]
+        # Pre-initialize so all 4 teams appear even before playing
+        if home["name"] not in by_group[letter]:
+            by_group[letter][home["name"]] = new_team_stats()
+        if away["name"] not in by_group[letter]:
+            by_group[letter][away["name"]] = new_team_stats()
 
         status = match.get("status")
         full_time = (match.get("score") or {}).get("fullTime") or {}
@@ -231,6 +246,8 @@ def build_standings_page(matches, team_group, as_of_str):
                 sa["W"] += 1; sa["Pts"] += 3; sh["L"] += 1
             else:
                 sh["D"] += 1; sh["Pts"] += 1; sa["D"] += 1; sa["Pts"] += 1
+
+    print(f"  [HTML] Groups found: {sorted(by_group.keys()) or 'NONE — group data missing from API response'}")
 
     # Build group HTML blocks
     group_blocks = []
@@ -276,7 +293,10 @@ def build_standings_page(matches, team_group, as_of_str):
       </table>
     </div>""")
 
-    groups_html = "\n".join(group_blocks)
+    if group_blocks:
+        groups_html = "\n".join(group_blocks)
+    else:
+        groups_html = '<p class="no-data">Standings data is not yet available from the API.</p>'
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -393,8 +413,15 @@ def build_standings_page(matches, team_group, as_of_str):
     tr.row.qualifier {{ background: rgba(26, 110, 245, 0.08); }}
     tr.row:hover     {{ background: #1a2240; }}
 
-    .qualifier-note {{
+    .no-data {{
+      grid-column: 1 / -1;
       text-align: center;
+      padding: 3rem 1rem;
+      color: #4a5270;
+      font-size: 0.9rem;
+    }}
+
+    .qualifier-note {{      text-align: center;
       margin-top: 1rem;
       font-size: 0.72rem;
       color: #4a5270;
@@ -448,8 +475,12 @@ def build_standings_page(matches, team_group, as_of_str):
 def build_calendar(matches, team_group, as_of_str):
     by_group = defaultdict(list)
 
+    def is_group_stage(match):
+        stage = (match.get("stage") or "").upper()
+        return "GROUP" in stage
+
     for match in matches:
-        if match.get("stage") != "GROUP_STAGE":
+        if not is_group_stage(match):
             continue
 
         home = match["homeTeam"]
