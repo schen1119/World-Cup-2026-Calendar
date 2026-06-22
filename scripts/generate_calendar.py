@@ -24,9 +24,35 @@ import requests
 
 BASE_URL = "https://api.football-data.org/v4"
 COMPETITION_CODE = "WC"
-OUTPUT_PATH = "docs/world-cup-2026-group-stage.ics"
+OUTPUT_ICS  = "docs/world-cup-2026-group-stage.ics"
+OUTPUT_HTML = "docs/index.html"
 
 FINISHED_STATUSES = {"FINISHED", "AWARDED"}
+
+
+def now_eastern():
+    """Return current time as a timezone-aware Eastern datetime, honouring DST."""
+    utc_now = datetime.datetime.now(datetime.timezone.utc)
+    year = utc_now.year
+    # 2nd Sunday in March at 07:00 UTC = DST start
+    march1 = datetime.datetime(year, 3, 1, tzinfo=datetime.timezone.utc)
+    dst_start = march1 + datetime.timedelta(days=(6 - march1.weekday()) % 7 + 7, hours=7)
+    # 1st Sunday in November at 06:00 UTC = DST end
+    nov1 = datetime.datetime(year, 11, 1, tzinfo=datetime.timezone.utc)
+    dst_end = nov1 + datetime.timedelta(days=(6 - nov1.weekday()) % 7, hours=6)
+    if dst_start <= utc_now < dst_end:
+        tz = datetime.timezone(datetime.timedelta(hours=-4), "EDT")
+    else:
+        tz = datetime.timezone(datetime.timedelta(hours=-5), "EST")
+    return utc_now.astimezone(tz)
+
+
+def as_of_string():
+    """Human-readable timestamp in US Eastern, e.g. '6/21/2026 at 3:45 PM EDT'."""
+    et = now_eastern()
+    tz_name = et.tzname()
+    # %-m / %-I strips leading zeros on Linux (works fine in GitHub Actions)
+    return et.strftime(f"%-m/%-d/%Y at %-I:%M %p {tz_name}")
 
 # Candidate season years to try if the primary one returns nothing.
 # football-data.org sometimes keys a tournament by the year it starts
@@ -141,7 +167,7 @@ def standings_block(group, stats, md_label, as_of_str):
                 f"{s['Pts']} {pt_word} (GD {gd_str}, {s['GF']} GF)"
             )
     lines.append(
-        f"(Live snapshot as of {as_of_str} \u2014 reflects results up to this match's kickoff)"
+        f"(Last updated {as_of_str} \u2014 reflects results up to this match's kickoff)"
     )
     return "\n".join(lines)
 
@@ -163,6 +189,260 @@ def escape_ics_text(text):
         .replace(",", "\\,")
         .replace("\n", "\\n")
     )
+
+
+def build_standings_page(matches, team_group, as_of_str):
+    """
+    Returns an HTML string showing the current (fully up-to-date) group
+    standings table for all groups. Designed to be served as docs/index.html
+    via GitHub Pages alongside the .ics feed.
+    """
+    # Compute final standings from ALL finished matches
+    by_group = defaultdict(lambda: defaultdict(new_team_stats))
+
+    for match in matches:
+        if match.get("stage") != "GROUP_STAGE":
+            continue
+        home = match["homeTeam"]
+        away = match["awayTeam"]
+        raw_group = match.get("group") or team_group.get(home["id"]) or team_group.get(away["id"])
+        if not raw_group:
+            continue
+        letter = group_letter(raw_group)
+        # ensure both teams exist in the table even if unplayed
+        by_group[letter][home["name"]]
+        by_group[letter][away["name"]]
+
+        status = match.get("status")
+        full_time = (match.get("score") or {}).get("fullTime") or {}
+        hg = full_time.get("home")
+        ag = full_time.get("away")
+        if status in FINISHED_STATUSES and hg is not None and ag is not None:
+            sh = by_group[letter][home["name"]]
+            sa = by_group[letter][away["name"]]
+            sh["P"] += 1; sa["P"] += 1
+            sh["GF"] += hg; sh["GA"] += ag
+            sa["GF"] += ag; sa["GA"] += hg
+            sh["GD"] = sh["GF"] - sh["GA"]
+            sa["GD"] = sa["GF"] - sa["GA"]
+            if hg > ag:
+                sh["W"] += 1; sh["Pts"] += 3; sa["L"] += 1
+            elif hg < ag:
+                sa["W"] += 1; sa["Pts"] += 3; sh["L"] += 1
+            else:
+                sh["D"] += 1; sh["Pts"] += 1; sa["D"] += 1; sa["Pts"] += 1
+
+    # Build group HTML blocks
+    group_blocks = []
+    for letter in sorted(by_group.keys()):
+        table = sort_table(dict(by_group[letter]))
+        rows_html = ""
+        for rank, (team, s) in enumerate(table, start=1):
+            gd_str = f"+{s['GD']}" if s["GD"] > 0 else str(s["GD"])
+            qualifier = " qualifier" if rank <= 2 else ""
+            rows_html += (
+                f'<tr class="row{qualifier}">'
+                f'<td class="rank">{rank}</td>'
+                f'<td class="team">{team}</td>'
+                f'<td>{s["P"]}</td>'
+                f'<td>{s["W"]}</td>'
+                f'<td>{s["D"]}</td>'
+                f'<td>{s["L"]}</td>'
+                f'<td>{s["GF"]}</td>'
+                f'<td>{s["GA"]}</td>'
+                f'<td class="gd">{gd_str}</td>'
+                f'<td class="pts">{s["Pts"]}</td>'
+                f'</tr>\n'
+            )
+        group_blocks.append(f"""
+    <div class="group">
+      <h2>Group {letter}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th class="team">Team</th>
+            <th title="Played">P</th>
+            <th title="Won">W</th>
+            <th title="Drawn">D</th>
+            <th title="Lost">L</th>
+            <th title="Goals For">GF</th>
+            <th title="Goals Against">GA</th>
+            <th title="Goal Difference">GD</th>
+            <th title="Points">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+{rows_html}        </tbody>
+      </table>
+    </div>""")
+
+    groups_html = "\n".join(group_blocks)
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIFA World Cup 2026 — Group Stage Standings</title>
+  <style>
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0a0f1e;
+      color: #e8eaf0;
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }}
+
+    header {{
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }}
+
+    header h1 {{
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+    }}
+
+    header h1 span {{
+      color: #f5a623;
+    }}
+
+    .updated {{
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #7a8099;
+    }}
+
+    .subscribe {{
+      display: inline-block;
+      margin-top: 1.2rem;
+      padding: 0.5rem 1.2rem;
+      background: #1a6ef5;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      transition: background 0.15s;
+    }}
+    .subscribe:hover {{ background: #1558cc; }}
+
+    .grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }}
+
+    .group {{
+      background: #131929;
+      border: 1px solid #1e2740;
+      border-radius: 10px;
+      overflow: hidden;
+    }}
+
+    .group h2 {{
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f5a623;
+      background: #0e1424;
+      border-bottom: 1px solid #1e2740;
+    }}
+
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }}
+
+    thead tr {{
+      background: #0e1424;
+    }}
+
+    th {{
+      padding: 0.45rem 0.5rem;
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: #7a8099;
+      text-transform: uppercase;
+      cursor: default;
+    }}
+    th.team {{ text-align: left; padding-left: 0.75rem; }}
+
+    td {{
+      padding: 0.5rem 0.5rem;
+      text-align: center;
+      border-top: 1px solid #1a2035;
+    }}
+    td.team {{ text-align: left; padding-left: 0.75rem; font-weight: 500; }}
+    td.rank {{ color: #7a8099; font-size: 0.75rem; }}
+    td.pts  {{ font-weight: 700; color: #ffffff; }}
+    td.gd   {{ color: #a0aabf; }}
+
+    tr.row.qualifier {{ background: rgba(26, 110, 245, 0.08); }}
+    tr.row:hover     {{ background: #1a2240; }}
+
+    .qualifier-note {{
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.72rem;
+      color: #4a5270;
+    }}
+    .qualifier-note span {{
+      display: inline-block;
+      width: 10px; height: 10px;
+      background: rgba(26, 110, 245, 0.3);
+      border: 1px solid rgba(26, 110, 245, 0.5);
+      border-radius: 2px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }}
+
+    footer {{
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.72rem;
+      color: #4a5270;
+    }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FIFA World Cup 2026 <span>Group Stage</span></h1>
+    <p class="updated">Last updated: {as_of_str}</p>
+    <a class="subscribe"
+       href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics">
+      &#x1F4C5; Subscribe to Calendar
+    </a>
+  </header>
+
+  <div class="grid">
+{groups_html}
+  </div>
+
+  <p class="qualifier-note">
+    <span></span>Top 2 teams in each group advance to the Round of 32.
+    Tiebreaker order: points → goal difference → goals scored → head-to-head.
+  </p>
+
+  <footer>
+    Data via <a href="https://www.football-data.org" style="color:#4a5270">football-data.org</a>
+    &nbsp;·&nbsp; Auto-updated via GitHub Actions
+  </footer>
+</body>
+</html>
+"""
 
 
 def build_calendar(matches, team_group, as_of_str):
@@ -286,7 +566,7 @@ def build_calendar(matches, team_group, as_of_str):
 
 def main():
     api_key = get_api_key()
-    as_of_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    as_of_str = as_of_string()   # e.g. "6/21/2026 at 3:45 PM EDT"
 
     print("Step 1: Finding the correct season and fetching matches...")
     season, matches = find_working_season(api_key)
@@ -303,7 +583,7 @@ def main():
         )
     print(f"  Found {len(set(team_group.values()))} groups covering {len(team_group)} teams.")
 
-    print("Step 3: Building calendar...")
+    print("Step 3: Building calendar (.ics)...")
     ics_text, event_count = build_calendar(matches, team_group, as_of_str)
 
     if event_count == 0:
@@ -312,11 +592,18 @@ def main():
             "processed -- check that the 'group' field is present on match objects."
         )
 
-    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
-    with open(OUTPUT_PATH, "w") as f:
+    os.makedirs(os.path.dirname(OUTPUT_ICS), exist_ok=True)
+    with open(OUTPUT_ICS, "w") as f:
         f.write(ics_text)
+    print(f"  Wrote {event_count} events to {OUTPUT_ICS}")
 
-    print(f"Done. Wrote {event_count} events to {OUTPUT_PATH} (season={season}).")
+    print("Step 4: Building standings page (index.html)...")
+    html = build_standings_page(matches, team_group, as_of_str)
+    with open(OUTPUT_HTML, "w") as f:
+        f.write(html)
+    print(f"  Wrote standings page to {OUTPUT_HTML}")
+
+    print(f"\nDone (season={season}, as of {as_of_str}).")
 
 
 if __name__ == "__main__":
