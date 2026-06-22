@@ -1,13 +1,13 @@
 name: Update World Cup Calendar
 
-# Triggered externally via cron-job.org (or any HTTP cron service) hitting:
+# Triggered externally via cron-job.org set to every 10 minutes:
 #   POST https://api.github.com/repos/YOUR-USERNAME/YOUR-REPO/actions/workflows/update-calendar.yml/dispatches
 # with body: {"ref":"main"}
 # and header: Authorization: Bearer YOUR_GITHUB_PAT
 #
 # Why not GitHub's built-in schedule trigger? GitHub freely admits scheduled
 # workflows can be delayed by hours or skipped entirely on inactive repos.
-# An external HTTP cron service is far more reliable for hourly updates.
+# An external HTTP cron service is far more reliable.
 # See README for setup instructions.
 
 on:
@@ -27,6 +27,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: pip-
 
       - name: Install dependencies
         run: pip install -r requirements.txt
