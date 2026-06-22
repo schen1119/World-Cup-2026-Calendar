@@ -7,16 +7,17 @@ that specific kickoff (computed progressively from finished results, not just
 "today's" table) -- so the file stays historically accurate even as it's
 regenerated over and over throughout the tournament.
 
-Data source: API-Football, via RapidAPI (https://rapidapi.com/api-sports/api/api-football).
-Requires an API key in the RAPIDAPI_KEY environment variable.
+Data source: football-data.org API v4 (https://www.football-data.org/).
+Requires an API key (their "token") in the FOOTBALL_DATA_API_KEY environment
+variable.
 
 USAGE:
-    RAPIDAPI_KEY=xxxx python3 scripts/generate_calendar.py
+    FOOTBALL_DATA_API_KEY=xxxx python3 scripts/generate_calendar.py
 
-NOTE: Verify the LEAGUE_ID below against your own API-Football account before
-relying on this. League IDs are stable, but it's worth a quick check via the
-/leagues endpoint (search "World Cup") to confirm `1` still maps correctly
-and that your plan tier includes this competition/season.
+NOTE: COMPETITION_CODE below ("WC") is football-data.org's stable code for
+the FIFA World Cup. Worth a quick sanity check against
+https://api.football-data.org/v4/competitions on your own account to confirm
+your plan tier includes it before relying on this long-term.
 """
 
 import os
@@ -27,65 +28,53 @@ from collections import defaultdict
 
 import requests
 
-API_HOST = "v3.football.api-sports.io"
-BASE_URL = f"https://{API_HOST}/"
-LEAGUE_ID = 1          # API-Football's league ID for "World Cup" -- verify before relying on it
+BASE_URL = "https://api.football-data.org/v4"
+COMPETITION_CODE = "WC"     # football-data.org's code for "FIFA World Cup"
 SEASON = 2026
 OUTPUT_PATH = "docs/world-cup-2026-group-stage.ics"   # served via GitHub Pages from /docs
 
-# Fixture statuses API-Football considers "finished" (see their status code docs)
-FINISHED_STATUSES = {"FT", "AET", "PEN", "AWD", "WO"}
+# football-data.org match statuses considered "finished"
+FINISHED_STATUSES = {"FINISHED", "AWARDED"}
 
 
 def get_api_key():
-    key = os.environ.get("RAPIDAPI_KEY")
+    key = os.environ.get("FOOTBALL_DATA_API_KEY")
     if not key:
-        sys.exit("ERROR: RAPIDAPI_KEY environment variable is not set.")
+        sys.exit("ERROR: FOOTBALL_DATA_API_KEY environment variable is not set.")
     return key
 
 
 def api_get(path, params, api_key):
-    headers = {
-        "x-rapidapi-key": api_key,
-        "x-rapidapi-host": API_HOST,
-    }
+    headers = {"X-Auth-Token": api_key}
     resp = requests.get(f"{BASE_URL}/{path}", headers=headers, params=params, timeout=30)
+    if resp.status_code == 429:
+        sys.exit("ERROR: Hit football-data.org's rate limit (429). Try again shortly.")
     resp.raise_for_status()
-    data = resp.json()
-    if data.get("errors"):
-        sys.exit(f"API error from /{path}: {data['errors']}")
-    return data["response"]
+    return resp.json()
 
 
 def fetch_team_to_group(api_key):
-    """Returns {team_id: 'Group A', ...} by reading the standings endpoint,
-    which is the only place API-Football exposes the actual group letter."""
-    standings_resp = api_get("standings", {"league": LEAGUE_ID, "season": SEASON}, api_key)
+    """Returns {team_id: 'Group A', ...} from the standings endpoint.
+    Used as a fallback when a match object doesn't carry its own 'group' field."""
+    data = api_get(f"competitions/{COMPETITION_CODE}/standings", {"season": SEASON}, api_key)
     team_group = {}
-    if not standings_resp:
-        return team_group
-    groups = standings_resp[0]["league"]["standings"]
-    for group_table in groups:
-        for entry in group_table:
-            team_group[entry["team"]["id"]] = entry["group"]
+    for group_table in data.get("standings", []):
+        grp = group_table.get("group")
+        if not grp:
+            continue
+        for row in group_table.get("table", []):
+            team_group[row["team"]["id"]] = grp
     return team_group
 
 
-def fetch_fixtures(api_key):
-    return api_get("fixtures", {"league": LEAGUE_ID, "season": SEASON}, api_key)
+def fetch_matches(api_key):
+    data = api_get(f"competitions/{COMPETITION_CODE}/matches", {"season": SEASON}, api_key)
+    return data.get("matches", [])
 
 
 def group_letter(group_name):
-    # API returns e.g. "Group A" -> normalize to just "A"
-    return group_name.replace("Group ", "").strip()
-
-
-def matchday_from_round(round_str):
-    # e.g. "Group Stage - 1" -> 1
-    try:
-        return int(round_str.split("-")[-1].strip())
-    except (ValueError, IndexError):
-        return None
+    # football-data.org returns e.g. "GROUP_A" -> normalize to just "A"
+    return group_name.replace("GROUP_", "").replace("Group ", "").strip()
 
 
 def new_team_stats():
@@ -135,33 +124,40 @@ def escape_ics_text(text):
     )
 
 
-def build_calendar(fixtures, team_group, as_of_str):
+def build_calendar(matches, team_group, as_of_str):
     by_group = defaultdict(list)
 
-    for fx in fixtures:
-        round_str = fx["league"]["round"]
-        if "Group Stage" not in round_str:
+    for match in matches:
+        if match.get("stage") != "GROUP_STAGE":
             continue  # skip knockout rounds entirely
 
-        home = fx["teams"]["home"]
-        away = fx["teams"]["away"]
-        grp = team_group.get(home["id"]) or team_group.get(away["id"])
-        if not grp:
-            continue
-        letter = group_letter(grp)
-        md = matchday_from_round(round_str)
+        home = match["homeTeam"]
+        away = match["awayTeam"]
 
-        kickoff = datetime.datetime.fromisoformat(fx["fixture"]["date"].replace("Z", "+00:00"))
+        # prefer the match's own group field; fall back to the standings-derived map
+        raw_group = match.get("group")
+        if not raw_group:
+            raw_group = team_group.get(home["id"]) or team_group.get(away["id"])
+        if not raw_group:
+            continue
+        letter = group_letter(raw_group)
+
+        md = match.get("matchday")
+
+        kickoff = datetime.datetime.fromisoformat(match["utcDate"].replace("Z", "+00:00"))
         kickoff_utc = kickoff.astimezone(datetime.timezone.utc).replace(tzinfo=None)
 
-        venue_info = fx["fixture"].get("venue") or {}
-        venue = venue_info.get("name") or "TBD"
-        city = venue_info.get("city") or ""
+        venue = match.get("venue") or "TBD"
 
-        status = fx["fixture"]["status"]["short"]
-        goals_home = fx["goals"]["home"]
-        goals_away = fx["goals"]["away"]
-        score = (goals_home, goals_away) if status in FINISHED_STATUSES and goals_home is not None else None
+        status = match.get("status")
+        full_time = (match.get("score") or {}).get("fullTime") or {}
+        goals_home = full_time.get("home")
+        goals_away = full_time.get("away")
+        score = (
+            (goals_home, goals_away)
+            if status in FINISHED_STATUSES and goals_home is not None and goals_away is not None
+            else None
+        )
 
         by_group[letter].append({
             "matchday": md,
@@ -169,7 +165,6 @@ def build_calendar(fixtures, team_group, as_of_str):
             "home": home["name"],
             "away": away["name"],
             "venue": venue,
-            "city": city,
             "score": score,
         })
 
@@ -183,7 +178,7 @@ def build_calendar(fixtures, team_group, as_of_str):
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
         "X-WR-CALNAME:FIFA World Cup 2026 - Group Stage (Live)",
-        "X-WR-CALDESC:Auto-updated group stage schedule and standings, refreshed via API-Football.",
+        "X-WR-CALDESC:Auto-updated group stage schedule and standings, refreshed via football-data.org.",
         "X-WR-TIMEZONE:UTC",
     ]
 
@@ -206,7 +201,7 @@ def build_calendar(fixtures, team_group, as_of_str):
                 end = m["kickoff"] + datetime.timedelta(hours=2)
                 uid = stable_uid(letter, m["home"], m["away"])
                 summary = f"Group {letter}: {m['home']} vs {m['away']}"
-                location = f"{m['venue']}, {m['city']}" if m["city"] else m["venue"]
+                location = m["venue"]
                 desc = (
                     f"FIFA World Cup 2026 Group Stage - Group {letter}\n"
                     f"{m['home']} vs {m['away']}\n"
@@ -257,13 +252,13 @@ def main():
     if not team_group:
         sys.exit("ERROR: No standings data returned -- aborting without touching the existing file.")
 
-    print("Fetching fixtures from /fixtures...")
-    fixtures = fetch_fixtures(api_key)
-    if not fixtures:
-        sys.exit("ERROR: No fixtures returned -- aborting without touching the existing file.")
+    print("Fetching matches from /matches...")
+    matches = fetch_matches(api_key)
+    if not matches:
+        sys.exit("ERROR: No matches returned -- aborting without touching the existing file.")
 
-    print(f"Building calendar from {len(fixtures)} fixtures across {len(set(team_group.values()))} groups...")
-    ics_text, event_count = build_calendar(fixtures, team_group, as_of_str)
+    print(f"Building calendar from {len(matches)} matches across {len(set(team_group.values()))} groups...")
+    ics_text, event_count = build_calendar(matches, team_group, as_of_str)
 
     if event_count == 0:
         sys.exit("ERROR: Built 0 events -- something looks wrong upstream, aborting without writing.")
