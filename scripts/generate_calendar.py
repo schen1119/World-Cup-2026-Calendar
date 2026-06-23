@@ -242,20 +242,38 @@ def build_standings_page(matches, team_group, as_of_str):
         venue = match.get("venue") or ""
         ko = kickoff_et(match)
         time_str = ko.strftime("%-I:%M %p ET")
+        minute = match.get("minute")
+        last_updated_raw = match.get("lastUpdated")
+
+        # Parse lastUpdated into a readable ET string
+        def fmt_last_updated(ts):
+            if not ts:
+                return None
+            try:
+                dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                dt_et = dt.astimezone(eastern_tz)
+                return dt_et.strftime("%-I:%M %p ET")
+            except Exception:
+                return None
 
         if status in FINISHED_STATUSES:
             hg = ft.get("home") if ft.get("home") is not None else 0
             ag = ft.get("away") if ft.get("away") is not None else 0
             score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
             badge = '<span class="badge badge-ft">FT</span>'
+            freshness_html = ""
         elif status in LIVE_STATUSES:
             hg = current.get("home") if current.get("home") is not None else 0
             ag = current.get("away") if current.get("away") is not None else 0
             score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
-            badge = '<span class="badge badge-live"><span class="live-dot"></span>Live</span>'
+            minute_str = f"{minute}'" if minute is not None else "in progress"
+            badge = f'<span class="badge badge-live"><span class="live-dot"></span>Live &middot; {minute_str}</span>'
+            lu = fmt_last_updated(last_updated_raw)
+            freshness_html = f'<div class="freshness">Score as of {minute_str} &nbsp;&middot;&nbsp; Data updated {lu}</div>' if lu else ""
         else:
             score_html = '<span class="score-dash">vs</span>'
             badge = '<span class="badge badge-upcoming">Upcoming</span>'
+            freshness_html = ""
 
         venue_part = f' &nbsp;·&nbsp; {venue}' if venue else ""
         return f"""        <div class="match-card">
@@ -268,7 +286,7 @@ def build_standings_page(matches, team_group, as_of_str):
           <div class="match-meta-bottom">
             <span class="match-time">{time_str}</span>
             {badge}
-          </div>
+          </div>{freshness_html}
         </div>"""
 
     if today_matches:
@@ -504,6 +522,12 @@ def build_standings_page(matches, team_group, as_of_str):
     }}
     .badge-ft {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
     .badge-upcoming {{ background: rgba(255,255,255,0.04); color: #4a5270; }}
+    .freshness {{
+      margin-top: 0.45rem;
+      font-size: 0.68rem;
+      color: #4a5270;
+      font-style: italic;
+    }}
     .standings-section {{ max-width: 1200px; margin: 0 auto; }}
     .grid {{
       display: grid;
