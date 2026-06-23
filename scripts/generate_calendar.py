@@ -193,15 +193,122 @@ def escape_ics_text(text):
 
 LIVE_STATUSES = {"IN_PLAY", "PAUSED", "HALFTIME"}
 
+# Fallback venue strings keyed on (home_name, away_name) as returned by the API.
+# Values are "Stadium Name, City, Country" — split on first ", " to get the two
+# display lines used in the schedule section.
+# Keys are lowercase for case-insensitive matching.
+VENUE_LOOKUP = {
+    ("mexico", "south africa"):             "Estadio Azteca, Mexico City, Mexico",
+    ("south korea", "czechia"):             "Estadio Akron, Guadalajara, Mexico",
+    ("czechia", "south africa"):            "Mercedes-Benz Stadium, Atlanta, USA",
+    ("mexico", "south korea"):              "Estadio Akron, Guadalajara, Mexico",
+    ("czechia", "mexico"):                  "Estadio Azteca, Mexico City, Mexico",
+    ("south africa", "south korea"):        "Estadio BBVA, Monterrey, Mexico",
+    ("canada", "bosnia and herzegovina"):   "BMO Field, Toronto, Canada",
+    ("qatar", "switzerland"):               "Levi's Stadium, Santa Clara, USA",
+    ("switzerland", "bosnia and herzegovina"): "SoFi Stadium, Inglewood, USA",
+    ("canada", "qatar"):                    "BC Place, Vancouver, Canada",
+    ("switzerland", "canada"):              "BC Place, Vancouver, Canada",
+    ("bosnia and herzegovina", "qatar"):    "Lumen Field, Seattle, USA",
+    ("brazil", "morocco"):                  "MetLife Stadium, East Rutherford, USA",
+    ("haiti", "scotland"):                  "Gillette Stadium, Foxborough, USA",
+    ("scotland", "morocco"):                "Gillette Stadium, Foxborough, USA",
+    ("brazil", "haiti"):                    "Lincoln Financial Field, Philadelphia, USA",
+    ("scotland", "brazil"):                 "Hard Rock Stadium, Miami, USA",
+    ("morocco", "haiti"):                   "Mercedes-Benz Stadium, Atlanta, USA",
+    ("united states", "paraguay"):          "SoFi Stadium, Inglewood, USA",
+    ("australia", "turkiye"):               "BC Place, Vancouver, Canada",
+    ("australia", "türkiye"):               "BC Place, Vancouver, Canada",
+    ("united states", "australia"):         "Lumen Field, Seattle, USA",
+    ("turkiye", "paraguay"):                "Levi's Stadium, Santa Clara, USA",
+    ("türkiye", "paraguay"):                "Levi's Stadium, Santa Clara, USA",
+    ("turkiye", "united states"):           "SoFi Stadium, Inglewood, USA",
+    ("türkiye", "united states"):           "SoFi Stadium, Inglewood, USA",
+    ("paraguay", "australia"):              "Levi's Stadium, Santa Clara, USA",
+    ("germany", "curacao"):                 "NRG Stadium, Houston, USA",
+    ("ivory coast", "ecuador"):             "Lincoln Financial Field, Philadelphia, USA",
+    ("côte d'ivoire", "ecuador"):           "Lincoln Financial Field, Philadelphia, USA",
+    ("germany", "ivory coast"):             "BMO Field, Toronto, Canada",
+    ("germany", "côte d'ivoire"):           "BMO Field, Toronto, Canada",
+    ("ecuador", "curacao"):                 "Arrowhead Stadium, Kansas City, USA",
+    ("curacao", "ivory coast"):             "Lincoln Financial Field, Philadelphia, USA",
+    ("curacao", "côte d'ivoire"):           "Lincoln Financial Field, Philadelphia, USA",
+    ("ecuador", "germany"):                 "MetLife Stadium, East Rutherford, USA",
+    ("netherlands", "japan"):               "AT&T Stadium, Arlington, USA",
+    ("sweden", "tunisia"):                  "Estadio BBVA, Monterrey, Mexico",
+    ("netherlands", "sweden"):              "NRG Stadium, Houston, USA",
+    ("tunisia", "japan"):                   "Estadio BBVA, Monterrey, Mexico",
+    ("japan", "sweden"):                    "AT&T Stadium, Arlington, USA",
+    ("tunisia", "netherlands"):             "Arrowhead Stadium, Kansas City, USA",
+    ("belgium", "egypt"):                   "Lumen Field, Seattle, USA",
+    ("iran", "new zealand"):                "SoFi Stadium, Inglewood, USA",
+    ("belgium", "iran"):                    "SoFi Stadium, Inglewood, USA",
+    ("new zealand", "egypt"):               "BC Place, Vancouver, Canada",
+    ("egypt", "iran"):                      "Lumen Field, Seattle, USA",
+    ("new zealand", "belgium"):             "BC Place, Vancouver, Canada",
+    ("spain", "cape verde"):                "Mercedes-Benz Stadium, Atlanta, USA",
+    ("saudi arabia", "uruguay"):            "Hard Rock Stadium, Miami, USA",
+    ("spain", "saudi arabia"):              "Mercedes-Benz Stadium, Atlanta, USA",
+    ("uruguay", "cape verde"):              "Hard Rock Stadium, Miami, USA",
+    ("cape verde", "saudi arabia"):         "NRG Stadium, Houston, USA",
+    ("uruguay", "spain"):                   "Estadio Akron, Guadalajara, Mexico",
+    ("france", "senegal"):                  "MetLife Stadium, East Rutherford, USA",
+    ("iraq", "norway"):                     "Gillette Stadium, Foxborough, USA",
+    ("france", "iraq"):                     "Lincoln Financial Field, Philadelphia, USA",
+    ("norway", "senegal"):                  "MetLife Stadium, East Rutherford, USA",
+    ("norway", "france"):                   "Gillette Stadium, Foxborough, USA",
+    ("senegal", "iraq"):                    "BMO Field, Toronto, Canada",
+    ("argentina", "algeria"):               "Arrowhead Stadium, Kansas City, USA",
+    ("austria", "jordan"):                  "Levi's Stadium, Santa Clara, USA",
+    ("argentina", "austria"):               "AT&T Stadium, Arlington, USA",
+    ("jordan", "algeria"):                  "Levi's Stadium, Santa Clara, USA",
+    ("jordan", "argentina"):                "AT&T Stadium, Arlington, USA",
+    ("algeria", "austria"):                 "Arrowhead Stadium, Kansas City, USA",
+    ("portugal", "dr congo"):               "NRG Stadium, Houston, USA",
+    ("portugal", "democratic republic of congo"): "NRG Stadium, Houston, USA",
+    ("uzbekistan", "colombia"):             "Estadio Azteca, Mexico City, Mexico",
+    ("portugal", "uzbekistan"):             "NRG Stadium, Houston, USA",
+    ("colombia", "dr congo"):               "Estadio Akron, Guadalajara, Mexico",
+    ("colombia", "democratic republic of congo"): "Estadio Akron, Guadalajara, Mexico",
+    ("colombia", "portugal"):               "Hard Rock Stadium, Miami, USA",
+    ("dr congo", "uzbekistan"):             "Mercedes-Benz Stadium, Atlanta, USA",
+    ("democratic republic of congo", "uzbekistan"): "Mercedes-Benz Stadium, Atlanta, USA",
+    ("england", "croatia"):                 "AT&T Stadium, Arlington, USA",
+    ("ghana", "panama"):                    "BMO Field, Toronto, Canada",
+    ("england", "ghana"):                   "Gillette Stadium, Foxborough, USA",
+    ("panama", "croatia"):                  "BMO Field, Toronto, Canada",
+    ("panama", "england"):                  "MetLife Stadium, East Rutherford, USA",
+    ("croatia", "ghana"):                   "Lincoln Financial Field, Philadelphia, USA",
+}
+
+
+def resolve_venue(match):
+    """Return the full venue string (Stadium, City, Country) for a match."""
+    venue = match.get("venue")
+    if venue:
+        return venue
+    home = match["homeTeam"]["name"].lower()
+    away = match["awayTeam"]["name"].lower()
+    return VENUE_LOOKUP.get((home, away)) or VENUE_LOOKUP.get((away, home)) or ""
+
+
+def resolve_venue_parts(match):
+    """Return (venue_name, city_country) for two-line display in the schedule.
+    Splits 'Stadium Name, City, Country' on the first ', '."""
+    full = resolve_venue(match)
+    if not full:
+        return ("TBD", "")
+    parts = full.split(", ", 1)
+    return (parts[0], parts[1]) if len(parts) > 1 else (parts[0], "")
+
 
 def build_standings_page(matches, team_group, as_of_str):
     """
     Returns an HTML string with:
-      1. Today's group-stage matches and their current scores (Eastern time).
+      1. Three-day fixture block: today → yesterday → tomorrow (Eastern time).
       2. Full group standings (all groups, fully up-to-date).
     Designed to be served as docs/index.html via GitHub Pages.
     """
-    # Diagnostic: show what stage labels the API is actually returning
     stage_counts = {}
     for m in matches:
         s = m.get("stage", "MISSING")
@@ -209,97 +316,106 @@ def build_standings_page(matches, team_group, as_of_str):
     print(f"  [HTML] Stage labels in API response: {stage_counts}")
 
     def is_group_stage(match):
-        stage = (match.get("stage") or "").upper()
-        return "GROUP" in stage
+        return "GROUP" in (match.get("stage") or "").upper()
 
-    # "Today" in US Eastern time — matches that kick off on this calendar date
     et_now = now_eastern()
-    today_et = et_now.date()
     eastern_tz = et_now.tzinfo
+    today_et     = et_now.date()
+    yesterday_et = today_et - datetime.timedelta(days=1)
+    tomorrow_et  = today_et + datetime.timedelta(days=1)
 
     def kickoff_et(match):
         utc = datetime.datetime.fromisoformat(match["utcDate"].replace("Z", "+00:00"))
         return utc.astimezone(eastern_tz)
 
-    # ------------------------------------------------------------------ #
-    # Section 1 – today's matches
-    # ------------------------------------------------------------------ #
-    today_matches = [
-        m for m in matches
-        if is_group_stage(m) and kickoff_et(m).date() == today_et
-    ]
-    today_matches.sort(key=lambda m: kickoff_et(m))
+    def fmt_last_updated(ts):
+        if not ts:
+            return None
+        try:
+            dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            dt_et = dt.astimezone(eastern_tz)
+            return dt_et.strftime("%I:%M %p ET").lstrip("0")
+        except Exception:
+            return None
 
-    def match_card_html(match):
+    def match_card_html(match, is_today=False):
         home = match["homeTeam"]["name"]
         away = match["awayTeam"]["name"]
         status = match.get("status", "")
         score_data = (match.get("score") or {})
-        ft = (score_data.get("fullTime") or {})
+        ft      = (score_data.get("fullTime") or {})
         current = (score_data.get("currentScore") or score_data.get("halfTime") or {})
         raw_group = match.get("group") or team_group.get(match["homeTeam"]["id"]) or ""
         group_lbl = f"Group {group_letter(raw_group)}" if raw_group else ""
-        venue = match.get("venue") or ""
-        ko = kickoff_et(match)
-        time_str = ko.strftime("%-I:%M %p ET")
-        minute = match.get("minute")
+        venue     = resolve_venue(match)
+        ko        = kickoff_et(match)
+        time_str  = ko.strftime("%I:%M %p ET").lstrip("0")
+        minute    = match.get("minute")
         last_updated_raw = match.get("lastUpdated")
-
-        # Parse lastUpdated into a readable ET string
-        def fmt_last_updated(ts):
-            if not ts:
-                return None
-            try:
-                dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                dt_et = dt.astimezone(eastern_tz)
-                return dt_et.strftime("%-I:%M %p ET")
-            except Exception:
-                return None
 
         if status in FINISHED_STATUSES:
             hg = ft.get("home") if ft.get("home") is not None else 0
             ag = ft.get("away") if ft.get("away") is not None else 0
-            score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
-            badge = '<span class="badge badge-ft">FT</span>'
+            score_html   = f'<span class="score">{hg}</span><span class="score-sep">&ndash;</span><span class="score">{ag}</span>'
+            badge        = '<span class="badge badge-ft">FT</span>'
             freshness_html = ""
         elif status in LIVE_STATUSES:
             hg = current.get("home") if current.get("home") is not None else 0
             ag = current.get("away") if current.get("away") is not None else 0
-            score_html = f'<span class="score">{hg}</span><span class="score-sep">–</span><span class="score">{ag}</span>'
-            minute_str = f"{minute}'" if minute is not None else "in progress"
-            badge = f'<span class="badge badge-live"><span class="live-dot"></span>Live &middot; {minute_str}</span>'
-            lu = fmt_last_updated(last_updated_raw)
+            score_html   = f'<span class="score">{hg}</span><span class="score-sep">&ndash;</span><span class="score">{ag}</span>'
+            minute_str   = f"{minute}'" if minute is not None else "in progress"
+            badge        = f'<span class="badge badge-live"><span class="live-dot"></span>Live &middot; {minute_str}</span>'
+            lu           = fmt_last_updated(last_updated_raw)
             freshness_html = f'<div class="freshness">Score as of {minute_str} &nbsp;&middot;&nbsp; Data updated {lu}</div>' if lu else ""
         else:
-            score_html = '<span class="score-dash">vs</span>'
-            badge = '<span class="badge badge-upcoming">Upcoming</span>'
+            score_html     = '<span class="score-dash">vs</span>'
+            badge          = '<span class="badge badge-upcoming">Upcoming</span>'
             freshness_html = ""
 
-        venue_part = f' &nbsp;·&nbsp; {venue}' if venue else ""
-        return f"""        <div class="match-card">
-          <div class="match-meta-top">{group_lbl}{venue_part}</div>
-          <div class="match-row">
-            <span class="team-name">{home}</span>
-            <div class="score-box">{score_html}</div>
-            <span class="team-name team-away">{away}</span>
-          </div>
-          <div class="match-meta-bottom">
-            <span class="match-time">{time_str}</span>
-            {badge}
-          </div>{freshness_html}
-        </div>"""
+        venue_part   = f' &nbsp;&middot;&nbsp; {venue}' if venue else ""
+        today_class  = " match-card-today" if is_today else ""
+        return f"""          <div class="match-card{today_class}">
+            <div class="card-top">{group_lbl}{venue_part}</div>
+            <div class="match-row">
+              <span class="team-name">{home}</span>
+              <div class="score-box">{score_html}</div>
+              <span class="team-name team-away">{away}</span>
+            </div>
+            <div class="card-bottom">
+              <span class="match-time">{time_str}</span>
+              {badge}
+            </div>{freshness_html}
+          </div>"""
 
-    if today_matches:
-        cards_html = "\n".join(match_card_html(m) for m in today_matches)
-        date_label = et_now.strftime("%A, %B %-d")
-        today_section_html = f"""  <section class="today-section">
-    <h2 class="section-label">Today&rsquo;s matches &mdash; {date_label}</h2>
-    <div class="matches-grid">
-{cards_html}
-    </div>
-  </section>"""
-    else:
-        today_section_html = ""
+    def day_block_html(day_date, label_text, pill_class, pill_text):
+        day_matches = sorted(
+            [m for m in matches if is_group_stage(m) and kickoff_et(m).date() == day_date],
+            key=kickoff_et
+        )
+        if not day_matches:
+            return ""
+        is_today = (day_date == today_et)
+        cards = "\n".join(match_card_html(m, is_today=is_today) for m in day_matches)
+        date_str = day_date.strftime("%a, %b %-d")
+        return f"""      <div class="day-block">
+        <div class="day-header">
+          <span class="day-label">{date_str}</span>
+          <span class="day-pill {pill_class}">{pill_text}</span>
+          <span class="day-divider"></span>
+        </div>
+        <div class="matches-grid">
+{cards}
+        </div>
+      </div>"""
+
+    today_block     = day_block_html(today_et,     et_now.strftime("%A, %B %-d"), "pill-today",     "Today")
+    yesterday_block = day_block_html(yesterday_et, "",                             "pill-yesterday", "Yesterday")
+    tomorrow_block  = day_block_html(tomorrow_et,  "",                             "pill-tomorrow",  "Tomorrow")
+
+    fixtures_blocks = "\n".join(b for b in [today_block, yesterday_block, tomorrow_block] if b)
+    fixtures_section_html = f"""  <div class="fixtures-section">
+{fixtures_blocks}
+  </div>""" if fixtures_blocks else ""
 
     # ------------------------------------------------------------------ #
     # Section 2 – standings (computed from all finished matches)
@@ -391,6 +507,97 @@ def build_standings_page(matches, team_group, as_of_str):
     else:
         groups_html = '<p class="no-data">Standings data is not yet available from the API.</p>'
 
+    # ------------------------------------------------------------------ #
+    # Section 3 – full schedule
+    # ------------------------------------------------------------------ #
+    def build_schedule_html():
+        group_stage = sorted(
+            [m for m in matches if is_group_stage(m)],
+            key=lambda m: m["utcDate"]
+        )
+        if not group_stage:
+            return ""
+
+        from itertools import groupby as _groupby
+
+        def match_et_date(m):
+            utc = datetime.datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
+            return utc.astimezone(eastern_tz).date()
+
+        rows_by_date = {}
+        for m in group_stage:
+            rows_by_date.setdefault(match_et_date(m), []).append(m)
+
+        date_blocks = []
+        for date, day_matches in sorted(rows_by_date.items()):
+            today_suffix = " &mdash; Today" if date == today_et else ""
+            date_label = date.strftime("%a, %b %-d") + today_suffix
+
+            row_htmls = []
+            for m in day_matches:
+                home   = m["homeTeam"]["name"]
+                away   = m["awayTeam"]["name"]
+                status = m.get("status", "")
+                raw_group = m.get("group") or team_group.get(m["homeTeam"]["id"]) or ""
+                grp    = f"GROUP {group_letter(raw_group)}" if raw_group else ""
+                ko     = datetime.datetime.fromisoformat(
+                             m["utcDate"].replace("Z", "+00:00")
+                         ).astimezone(eastern_tz)
+                time_s = ko.strftime("%I:%M %p ET").lstrip("0")
+
+                score_data = (m.get("score") or {})
+                ft      = (score_data.get("fullTime") or {})
+                current = (score_data.get("currentScore") or score_data.get("halfTime") or {})
+
+                if status in FINISHED_STATUSES:
+                    hg = ft.get("home") if ft.get("home") is not None else 0
+                    ag = ft.get("away") if ft.get("away") is not None else 0
+                    score_cell   = f'<span class="sched-score">{hg}</span><span class="sched-sep">&ndash;</span><span class="sched-score">{ag}</span>'
+                    status_label = '<span class="sched-status-ft">FT</span>'
+                    row_cls      = ""
+                elif status in LIVE_STATUSES:
+                    hg = current.get("home") if current.get("home") is not None else 0
+                    ag = current.get("away") if current.get("away") is not None else 0
+                    score_cell   = f'<span class="sched-score">{hg}</span><span class="sched-sep">&ndash;</span><span class="sched-score">{ag}</span>'
+                    status_label = '<span class="sched-status-live"><span class="sched-live-dot"></span>Live</span>'
+                    row_cls      = " sched-row-live"
+                else:
+                    score_cell   = '<span class="sched-vs">vs</span>'
+                    status_label = ""
+                    row_cls      = " sched-row-upcoming" if date == today_et else ""
+
+                vname, vcity = resolve_venue_parts(m)
+                venue_html = f'<span class="sched-venue-name">{vname}</span><span class="sched-venue-city">{vcity}</span>' if vcity else f'<span class="sched-venue-name">{vname}</span>'
+
+                row_htmls.append(
+                    f'<div class="sched-row{row_cls}">'
+                    f'<div class="sched-col-time"><span class="sched-time">{time_s}</span><span class="sched-grp">{grp}</span></div>'
+                    f'<div class="sched-col-home">{home}</div>'
+                    f'<div class="sched-col-score">{score_cell}</div>'
+                    f'<div class="sched-col-away">{away}</div>'
+                    f'<div class="sched-col-venue">{status_label}{venue_html}</div>'
+                    f'</div>'
+                )
+
+            date_blocks.append(
+                f'<div class="sched-date-group">'
+                f'<div class="sched-date-header">'
+                f'<span class="sched-date-str">{date_label}</span>'
+                f'<span class="sched-date-line"></span>'
+                f'</div>'
+                + "\n".join(row_htmls)
+                + "</div>"
+            )
+
+        return (
+            '<div class="schedule-section">'
+            '<p class="section-label">Full schedule</p>'
+            + "\n".join(date_blocks)
+            + "</div>"
+        )
+
+    schedule_html = build_schedule_html()
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -438,25 +645,59 @@ def build_standings_page(matches, team_group, as_of_str):
       color: #7a8099;
       margin-bottom: 1rem;
     }}
-    .today-section {{
+    .fixtures-section {{
       max-width: 1200px;
       margin: 0 auto 2.5rem;
+    }}
+    .day-block {{ margin-bottom: 1.75rem; }}
+    .day-header {{
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+    }}
+    .day-label {{
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #7a8099;
+      flex-shrink: 0;
+    }}
+    .day-pill {{
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 2px 8px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }}
+    .pill-today    {{ background: rgba(26,110,245,0.15); color: #60a5fa; }}
+    .pill-yesterday {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
+    .pill-tomorrow  {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
+    .day-divider {{
+      flex: 1;
+      height: 1px;
+      background: #1e2740;
     }}
     .matches-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-      gap: 1rem;
+      gap: 0.85rem;
     }}
     .match-card {{
       background: #131929;
       border: 1px solid #1e2740;
       border-radius: 10px;
-      padding: 0.85rem 1rem;
+      padding: 0.8rem 0.9rem;
     }}
-    .match-meta-top {{
-      font-size: 0.72rem;
+    .match-card-today {{
+      border-color: #2a3d5c;
+    }}
+    .card-top {{
+      font-size: 0.7rem;
       color: #7a8099;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.55rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -466,10 +707,10 @@ def build_standings_page(matches, team_group, as_of_str):
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.55rem;
     }}
     .team-name {{
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
       color: #e8eaf0;
       flex: 1;
@@ -486,22 +727,22 @@ def build_standings_page(matches, team_group, as_of_str):
       flex-shrink: 0;
     }}
     .score {{
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: #ffffff;
-      min-width: 1.1rem;
+      min-width: 1rem;
       text-align: center;
     }}
-    .score-sep {{ font-size: 1rem; color: #4a5270; }}
-    .score-dash {{ font-size: 0.85rem; color: #4a5270; padding: 0 0.25rem; }}
-    .match-meta-bottom {{
+    .score-sep {{ font-size: 0.9rem; color: #4a5270; }}
+    .score-dash {{ font-size: 0.8rem; color: #4a5270; padding: 0 0.25rem; }}
+    .card-bottom {{
       display: flex;
       align-items: center;
       justify-content: space-between;
     }}
-    .match-time {{ font-size: 0.75rem; color: #7a8099; }}
+    .match-time {{ font-size: 0.72rem; color: #7a8099; }}
     .badge {{
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 700;
       letter-spacing: 0.05em;
       padding: 2px 8px;
@@ -515,7 +756,7 @@ def build_standings_page(matches, team_group, as_of_str):
       gap: 4px;
     }}
     .live-dot {{
-      width: 6px; height: 6px;
+      width: 5px; height: 5px;
       background: #f87171;
       border-radius: 50%;
       flex-shrink: 0;
@@ -523,8 +764,8 @@ def build_standings_page(matches, team_group, as_of_str):
     .badge-ft {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
     .badge-upcoming {{ background: rgba(255,255,255,0.04); color: #4a5270; }}
     .freshness {{
-      margin-top: 0.45rem;
-      font-size: 0.68rem;
+      margin-top: 0.4rem;
+      font-size: 0.65rem;
       color: #4a5270;
       font-style: italic;
     }}
@@ -598,20 +839,126 @@ def build_standings_page(matches, team_group, as_of_str):
       font-size: 0.72rem;
       color: #4a5270;
     }}
+    .schedule-section {{
+      max-width: 1200px;
+      margin: 3rem auto 0;
+    }}
+    .sched-date-group {{ margin-bottom: 1.5rem; }}
+    .sched-date-header {{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }}
+    .sched-date-str {{
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #7a8099;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }}
+    .sched-date-line {{
+      flex: 1;
+      height: 1px;
+      background: #1e2740;
+    }}
+    .sched-row {{
+      display: grid;
+      grid-template-columns: 76px 1fr 68px 1fr 120px;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 0.5px solid #1e2740;
+      background: #131929;
+      margin-bottom: 4px;
+    }}
+    .sched-row-live     {{ border-color: #3d2020; }}
+    .sched-row-upcoming {{ border-color: #2a3d5c; }}
+    .sched-col-time .sched-time {{
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #a0aabf;
+    }}
+    .sched-col-time .sched-grp {{
+      display: block;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      color: #f5a623;
+      margin-top: 2px;
+    }}
+    .sched-col-home {{ text-align: right; font-size: 0.82rem; font-weight: 500; color: #e8eaf0; }}
+    .sched-col-away {{ text-align: left;  font-size: 0.82rem; font-weight: 500; color: #e8eaf0; }}
+    .sched-col-score {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }}
+    .sched-score {{ font-size: 1rem; font-weight: 700; color: #ffffff; min-width: 12px; text-align: center; }}
+    .sched-sep   {{ font-size: 0.75rem; color: #4a5270; }}
+    .sched-vs    {{ font-size: 0.7rem; color: #4a5270; }}
+    .sched-col-venue {{ text-align: right; min-width: 0; }}
+    .sched-status-ft {{
+      display: block;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #4a5270;
+      margin-bottom: 2px;
+    }}
+    .sched-status-live {{
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 3px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #f87171;
+      margin-bottom: 2px;
+    }}
+    .sched-live-dot {{
+      width: 5px; height: 5px;
+      background: #f87171;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }}
+    .sched-venue-name {{
+      display: block;
+      font-size: 0.7rem;
+      color: #a0aabf;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
+    .sched-venue-city {{
+      display: block;
+      font-size: 0.65rem;
+      color: #7a8099;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
   </style>
 </head>
 <body>
 
   <div class="page-header">
     <h1>FIFA World Cup 2026 <span>Group Stage</span></h1>
-    <p class="updated">Last updated: {as_of_str} &nbsp;&middot;&nbsp; Scores update approximately every 5 minutes</p>
+    <p class="updated">Last updated: {as_of_str} with latest available data from football-data.org</p>
     <a class="subscribe"
        href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics">
       &#x1F4C5; Subscribe to Calendar
     </a>
   </div>
 
-{today_section_html}
+{fixtures_section_html}
   <div class="standings-section">
     <p class="section-label">Group standings</p>
     <div class="grid">
@@ -623,6 +970,8 @@ def build_standings_page(matches, team_group, as_of_str):
     <span></span>Top 2 teams in each group advance to the Round of 32.
     Tiebreaker: points &rarr; goal difference &rarr; goals scored &rarr; head-to-head.
   </p>
+
+  {schedule_html}
 
   <footer>
     Data via <a href="https://www.football-data.org" style="color:#4a5270">football-data.org</a>
