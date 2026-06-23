@@ -436,6 +436,7 @@ def build_standings_page(matches, team_group, as_of_str):
         raw_group = match.get("group") or team_group.get(match["homeTeam"]["id"]) or ""
         group_lbl = f"Group {group_letter(raw_group)}" if raw_group else ""
         venue     = resolve_venue(match)
+        vname, vcity = resolve_venue_parts(match)
         ko        = kickoff_et(match)
         time_str  = ko.strftime("%I:%M %p ET").lstrip("0")
         minute    = match.get("minute")
@@ -460,10 +461,17 @@ def build_standings_page(matches, team_group, as_of_str):
             badge          = '<span class="badge badge-upcoming">Upcoming</span>'
             freshness_html = ""
 
-        venue_part   = f' &nbsp;&middot;&nbsp; {venue}' if venue else ""
-        today_class  = " match-card-today" if is_today else ""
-        metlife_class = " match-card-metlife" if is_metlife(match) else ""
-        return f"""          <div class="match-card{today_class}{metlife_class}">
+        if vname and vcity:
+            vname_html = f'<span class="venue-metlife">{vname}</span>' if is_metlife(match) else vname
+            venue_display = f'{vname_html}, {vcity}'
+        elif venue:
+            venue_display = f'<span class="venue-metlife">{venue}</span>' if is_metlife(match) else venue
+        else:
+            venue_display = ""
+
+        venue_part  = f' &nbsp;&middot;&nbsp; {venue_display}' if venue_display else ""
+        today_class = " match-card-today" if is_today else ""
+        return f"""          <div class="match-card{today_class}">
             <div class="card-top">{group_lbl}{venue_part}</div>
             <div class="match-row">
               <span class="team-name">{home}</span>
@@ -702,14 +710,15 @@ def build_standings_page(matches, team_group, as_of_str):
                     row_cls      = " sched-row-upcoming" if date == today_et else ""
 
                 if is_metlife(m):
-                    row_cls += " sched-row-metlife"
+                    row_cls = row_cls.replace(" sched-row-metlife", "")
 
                 vname, vcity = resolve_venue_parts(m)
+                vname_display = f'<span class="sched-venue-name venue-metlife">{vname}</span>' if is_metlife(m) else f'<span class="sched-venue-name">{vname}</span>'
                 venue_html = (
-                    f'<span class="sched-venue-name">{vname}</span>'
-                    f'<span class="sched-venue-city">{vcity}</span>'
+                    vname_display
+                    + f'<span class="sched-venue-city">{vcity}</span>'
                     if vcity else
-                    f'<span class="sched-venue-name">{vname}</span>'
+                    vname_display
                 )
 
                 row_htmls.append(
@@ -1089,13 +1098,9 @@ def build_standings_page(matches, team_group, as_of_str):
       overflow: hidden;
       text-overflow: ellipsis;
     }}
-    .sched-row-metlife {{
-      border-color: rgba(245, 166, 35, 0.5);
-      background: rgba(245, 166, 35, 0.05);
-    }}
-    .match-card-metlife {{
-      border-color: rgba(245, 166, 35, 0.5);
-      background: rgba(245, 166, 35, 0.05);
+    .venue-metlife {{
+      font-weight: 700;
+      color: #f5a623;
     }}
     .sched-ko-header {{
       display: flex;
