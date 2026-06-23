@@ -509,7 +509,7 @@ def build_standings_page(matches, team_group, as_of_str):
     yesterday_block = day_block_html(yesterday_et, "",                             "pill-yesterday", "Yesterday")
     tomorrow_block  = day_block_html(tomorrow_et,  "",                             "pill-tomorrow",  "Tomorrow")
 
-    fixtures_blocks = "\n".join(b for b in [today_block, yesterday_block, tomorrow_block] if b)
+    fixtures_blocks = "\n".join(b for b in [today_block, tomorrow_block, yesterday_block] if b)
     fixtures_section_html = f"""  <div class="fixtures-section">
 {fixtures_blocks}
   </div>""" if fixtures_blocks else ""
