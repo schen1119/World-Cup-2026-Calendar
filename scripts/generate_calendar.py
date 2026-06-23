@@ -305,8 +305,8 @@ def resolve_venue(match):
     venue = match.get("venue")
     if venue:
         return venue
-    home = match["homeTeam"]["name"].lower()
-    away = match["awayTeam"]["name"].lower()
+    home = (match["homeTeam"]["name"] or "").lower()
+    away = (match["awayTeam"]["name"] or "").lower()
     return VENUE_LOOKUP.get((home, away)) or VENUE_LOOKUP.get((away, home)) or ""
 
 
