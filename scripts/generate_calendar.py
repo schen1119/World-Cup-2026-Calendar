@@ -336,6 +336,19 @@ def build_standings_page(matches, team_group, as_of_str):
     def is_group_stage(match):
         return "GROUP" in (match.get("stage") or "").upper()
 
+    # Maps football-data.org stage strings to display labels for knockout rounds
+    STAGE_DISPLAY = {
+        "LAST_32":       "Round of 32",
+        "LAST_16":       "Round of 16",
+        "QUARTER_FINALS":"Quarterfinal",
+        "SEMI_FINALS":   "Semifinal",
+        "THIRD_PLACE":   "3rd Place",
+        "FINAL":         "Final",
+    }
+
+    def is_metlife(match):
+        return "metlife" in resolve_venue(match).lower()
+
     et_now = now_eastern()
     eastern_tz = et_now.tzinfo
     today_et     = et_now.date()
@@ -392,7 +405,8 @@ def build_standings_page(matches, team_group, as_of_str):
 
         venue_part   = f' &nbsp;&middot;&nbsp; {venue}' if venue else ""
         today_class  = " match-card-today" if is_today else ""
-        return f"""          <div class="match-card{today_class}">
+        metlife_class = " match-card-metlife" if is_metlife(match) else ""
+        return f"""          <div class="match-card{today_class}{metlife_class}">
             <div class="card-top">{group_lbl}{venue_part}</div>
             <div class="match-row">
               <span class="team-name">{home}</span>
@@ -529,35 +543,57 @@ def build_standings_page(matches, team_group, as_of_str):
     # Section 3 – full schedule
     # ------------------------------------------------------------------ #
     def build_schedule_html():
-        group_stage = sorted(
-            [m for m in matches if is_group_stage(m)],
-            key=lambda m: m["utcDate"]
-        )
-        if not group_stage:
+        all_matches = sorted(matches, key=lambda m: m["utcDate"])
+        if not all_matches:
             return ""
-
-        from itertools import groupby as _groupby
 
         def match_et_date(m):
             utc = datetime.datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
             return utc.astimezone(eastern_tz).date()
 
+        def stage_label(m):
+            """Return the badge label for the time column."""
+            stage = (m.get("stage") or "").upper()
+            if "GROUP" in stage:
+                raw_group = m.get("group") or team_group.get(m["homeTeam"]["id"]) or ""
+                return f"GROUP {group_letter(raw_group)}" if raw_group else "Group Stage"
+            return STAGE_DISPLAY.get(stage, stage.replace("_", " ").title())
+
+        def team_name(obj):
+            """Return team name, falling back to 'TBD' if not yet determined."""
+            name = (obj or {}).get("name") or ""
+            return name if name else "TBD"
+
         rows_by_date = {}
-        for m in group_stage:
+        for m in all_matches:
             rows_by_date.setdefault(match_et_date(m), []).append(m)
+
+        # Identify the boundary between group stage and knockout dates for separator
+        group_dates  = {match_et_date(m) for m in all_matches if is_group_stage(m)}
+        knockout_dates = {match_et_date(m) for m in all_matches if not is_group_stage(m)}
+        first_ko_date = min(knockout_dates) if knockout_dates else None
 
         date_blocks = []
         for date, day_matches in sorted(rows_by_date.items()):
             today_suffix = " &mdash; Today" if date == today_et else ""
             date_label = date.strftime("%a, %b %-d") + today_suffix
 
+            # Insert knockout stage divider before the first knockout date
+            if date == first_ko_date:
+                date_blocks.append(
+                    '<div class="sched-ko-header">'
+                    '<span class="sched-ko-line"></span>'
+                    '<span class="sched-ko-title">Knockout Stage</span>'
+                    '<span class="sched-ko-line"></span>'
+                    '</div>'
+                )
+
             row_htmls = []
             for m in day_matches:
-                home   = m["homeTeam"]["name"]
-                away   = m["awayTeam"]["name"]
+                home   = team_name(m.get("homeTeam"))
+                away   = team_name(m.get("awayTeam"))
                 status = m.get("status", "")
-                raw_group = m.get("group") or team_group.get(m["homeTeam"]["id"]) or ""
-                grp    = f"GROUP {group_letter(raw_group)}" if raw_group else ""
+                grp    = stage_label(m)
                 ko     = datetime.datetime.fromisoformat(
                              m["utcDate"].replace("Z", "+00:00")
                          ).astimezone(eastern_tz)
@@ -584,8 +620,16 @@ def build_standings_page(matches, team_group, as_of_str):
                     status_label = ""
                     row_cls      = " sched-row-upcoming" if date == today_et else ""
 
+                if is_metlife(m):
+                    row_cls += " sched-row-metlife"
+
                 vname, vcity = resolve_venue_parts(m)
-                venue_html = f'<span class="sched-venue-name">{vname}</span><span class="sched-venue-city">{vcity}</span>' if vcity else f'<span class="sched-venue-name">{vname}</span>'
+                venue_html = (
+                    f'<span class="sched-venue-name">{vname}</span>'
+                    f'<span class="sched-venue-city">{vcity}</span>'
+                    if vcity else
+                    f'<span class="sched-venue-name">{vname}</span>'
+                )
 
                 row_htmls.append(
                     f'<div class="sched-row{row_cls}">'
@@ -962,6 +1006,33 @@ def build_standings_page(matches, team_group, as_of_str):
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }}
+    .sched-row-metlife {{
+      border-color: rgba(245, 166, 35, 0.5);
+      background: rgba(245, 166, 35, 0.05);
+    }}
+    .match-card-metlife {{
+      border-color: rgba(245, 166, 35, 0.5);
+      background: rgba(245, 166, 35, 0.05);
+    }}
+    .sched-ko-header {{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 2rem 0 1.25rem;
+    }}
+    .sched-ko-line {{
+      flex: 1;
+      height: 1px;
+      background: #2a3d5c;
+    }}
+    .sched-ko-title {{
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #f5a623;
+      flex-shrink: 0;
     }}
   </style>
 </head>
