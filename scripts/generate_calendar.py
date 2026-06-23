@@ -300,14 +300,71 @@ VENUE_LOOKUP = {
 }
 
 
+# Knockout stage venues keyed on UTC kickoff time (first 16 chars of utcDate,
+# e.g. "2026-06-28T19:00"). Teams are TBD so team-name lookup won't work;
+# kickoff slot is unique per match and known from the official FIFA schedule.
+# All times converted from EDT (UTC-4). Venue names kept consistent with
+# VENUE_LOOKUP above (Foxborough not Boston, Arlington not Dallas, etc.)
+KNOCKOUT_VENUE_LOOKUP = {
+    # Round of 32 — Jun 28–Jul 3
+    "2026-06-28T19:00": "SoFi Stadium, Los Angeles, USA",
+    "2026-06-29T17:00": "NRG Stadium, Houston, USA",
+    "2026-06-29T20:30": "Gillette Stadium, Foxborough, USA",
+    "2026-06-30T01:00": "Estadio BBVA, Monterrey, Mexico",
+    "2026-06-30T17:00": "AT&T Stadium, Arlington, USA",
+    "2026-06-30T21:00": "MetLife Stadium, East Rutherford, USA",
+    "2026-07-01T01:00": "Estadio Azteca, Mexico City, Mexico",
+    "2026-07-01T16:00": "Mercedes-Benz Stadium, Atlanta, USA",
+    "2026-07-01T20:00": "Lumen Field, Seattle, USA",
+    "2026-07-02T00:00": "Levi's Stadium, Santa Clara, USA",
+    "2026-07-02T19:00": "SoFi Stadium, Los Angeles, USA",
+    "2026-07-02T23:00": "BMO Field, Toronto, Canada",
+    "2026-07-03T03:00": "BC Place, Vancouver, Canada",
+    "2026-07-03T18:00": "AT&T Stadium, Arlington, USA",
+    "2026-07-03T22:00": "Hard Rock Stadium, Miami, USA",
+    "2026-07-04T01:30": "Arrowhead Stadium, Kansas City, USA",
+    # Round of 16 — Jul 4–7
+    "2026-07-04T17:00": "NRG Stadium, Houston, USA",
+    "2026-07-04T21:00": "Lincoln Financial Field, Philadelphia, USA",
+    "2026-07-05T20:00": "MetLife Stadium, East Rutherford, USA",
+    "2026-07-06T00:00": "Estadio Azteca, Mexico City, Mexico",
+    "2026-07-06T19:00": "AT&T Stadium, Arlington, USA",
+    "2026-07-07T00:00": "Lumen Field, Seattle, USA",
+    "2026-07-07T16:00": "Mercedes-Benz Stadium, Atlanta, USA",
+    "2026-07-07T20:00": "BC Place, Vancouver, Canada",
+    # Quarterfinals — Jul 9–11
+    "2026-07-09T20:00": "Gillette Stadium, Foxborough, USA",
+    "2026-07-10T19:00": "SoFi Stadium, Los Angeles, USA",
+    "2026-07-11T21:00": "Hard Rock Stadium, Miami, USA",
+    "2026-07-12T01:00": "Arrowhead Stadium, Kansas City, USA",
+    # Semifinals — Jul 14–15
+    "2026-07-14T19:00": "AT&T Stadium, Arlington, USA",
+    "2026-07-15T19:00": "Mercedes-Benz Stadium, Atlanta, USA",
+    # Third-place play-off — Jul 18
+    "2026-07-18T21:00": "Hard Rock Stadium, Miami, USA",
+    # Final — Jul 19
+    "2026-07-19T19:00": "MetLife Stadium, East Rutherford, USA",
+}
+
+
 def resolve_venue(match):
-    """Return the full venue string (Stadium, City, Country) for a match."""
+    """Return the full venue string (Stadium, City, Country) for a match.
+    Priority: (1) API field, (2) team-name lookup for group stage,
+    (3) UTC-kickoff-time lookup for knockout stage."""
     venue = match.get("venue")
     if venue:
         return venue
     home = (match["homeTeam"]["name"] or "").lower()
     away = (match["awayTeam"]["name"] or "").lower()
-    return VENUE_LOOKUP.get((home, away)) or VENUE_LOOKUP.get((away, home)) or ""
+    result = VENUE_LOOKUP.get((home, away)) or VENUE_LOOKUP.get((away, home))
+    if result:
+        return result
+    # Knockout fallback: key on UTC kickoff datetime (first 16 chars of utcDate)
+    utc_date = match.get("utcDate", "")
+    if utc_date:
+        key = utc_date[:16]   # e.g. "2026-06-28T19:00"
+        return KNOCKOUT_VENUE_LOOKUP.get(key, "")
+    return ""
 
 
 def resolve_venue_parts(match):
@@ -569,18 +626,42 @@ def build_standings_page(matches, team_group, as_of_str):
             rows_by_date.setdefault(match_et_date(m), []).append(m)
 
         # Identify the boundary between group stage and knockout dates for separator
-        group_dates  = {match_et_date(m) for m in all_matches if is_group_stage(m)}
+        group_dates    = {match_et_date(m) for m in all_matches if is_group_stage(m)}
         knockout_dates = {match_et_date(m) for m in all_matches if not is_group_stage(m)}
-        first_ko_date = min(knockout_dates) if knockout_dates else None
+        first_ko_date  = min(knockout_dates) if knockout_dates else None
+
+        # Order: today first, then future dates ascending, then past dates ascending
+        all_dates  = sorted(rows_by_date.keys())
+        past_dates = [d for d in all_dates if d < today_et]
+        pres_dates = [d for d in all_dates if d == today_et]
+        future_dates = [d for d in all_dates if d > today_et]
+        ordered_dates = pres_dates + future_dates + past_dates
 
         date_blocks = []
-        for date, day_matches in sorted(rows_by_date.items()):
+        past_divider_added = False
+        for date in ordered_dates:
+            day_matches = rows_by_date[date]
+            is_past = date < today_et
+
+            # Insert a "completed match days" divider before the first past date
+            if is_past and not past_divider_added:
+                date_blocks.append(
+                    '<div class="sched-past-header">'
+                    '<span class="sched-past-line"></span>'
+                    '<span class="sched-past-title">Completed match days</span>'
+                    '<span class="sched-past-line"></span>'
+                    '</div>'
+                )
+                past_divider_added = True
+
             today_suffix = " &mdash; Today" if date == today_et else ""
             date_label = date.strftime("%a, %b %-d") + today_suffix
+            past_class = " sched-date-group-past" if is_past else ""
 
             # Insert knockout stage divider before the first knockout date
+            ko_divider = ""
             if date == first_ko_date:
-                date_blocks.append(
+                ko_divider = (
                     '<div class="sched-ko-header">'
                     '<span class="sched-ko-line"></span>'
                     '<span class="sched-ko-title">Knockout Stage</span>'
@@ -642,11 +723,12 @@ def build_standings_page(matches, team_group, as_of_str):
                 )
 
             date_blocks.append(
-                f'<div class="sched-date-group">'
-                f'<div class="sched-date-header">'
-                f'<span class="sched-date-str">{date_label}</span>'
-                f'<span class="sched-date-line"></span>'
-                f'</div>'
+                ko_divider
+                + f'<div class="sched-date-group{past_class}">'
+                + f'<div class="sched-date-header">'
+                + f'<span class="sched-date-str">{date_label}</span>'
+                + f'<span class="sched-date-line"></span>'
+                + '</div>'
                 + "\n".join(row_htmls)
                 + "</div>"
             )
@@ -1032,6 +1114,28 @@ def build_standings_page(matches, team_group, as_of_str):
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #f5a623;
+      flex-shrink: 0;
+    }}
+    .sched-date-group-past {{
+      opacity: 0.5;
+    }}
+    .sched-past-header {{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 2rem 0 1.25rem;
+    }}
+    .sched-past-line {{
+      flex: 1;
+      height: 1px;
+      background: #1e2740;
+    }}
+    .sched-past-title {{
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4a5270;
       flex-shrink: 0;
     }}
   </style>
