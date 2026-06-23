@@ -279,6 +279,24 @@ VENUE_LOOKUP = {
     ("panama", "croatia"):                  "BMO Field, Toronto, Canada",
     ("panama", "england"):                  "MetLife Stadium, East Rutherford, USA",
     ("croatia", "ghana"):                   "Lincoln Financial Field, Philadelphia, USA",
+    # API name variants observed in live responses
+    ("canada", "bosnia-herzegovina"):       "BMO Field, Toronto, Canada",
+    ("switzerland", "bosnia-herzegovina"):  "SoFi Stadium, Inglewood, USA",
+    ("bosnia-herzegovina", "qatar"):        "Lumen Field, Seattle, USA",
+    ("australia", "turkey"):                "BC Place, Vancouver, Canada",
+    ("turkey", "paraguay"):                 "Levi's Stadium, Santa Clara, USA",
+    ("turkey", "united states"):            "SoFi Stadium, Inglewood, USA",
+    ("paraguay", "turkey"):                 "Levi's Stadium, Santa Clara, USA",
+    ("germany", "curaçao"):                 "NRG Stadium, Houston, USA",
+    ("ecuador", "curaçao"):                 "Arrowhead Stadium, Kansas City, USA",
+    ("curaçao", "ivory coast"):             "Lincoln Financial Field, Philadelphia, USA",
+    ("curaçao", "côte d'ivoire"):           "Lincoln Financial Field, Philadelphia, USA",
+    ("spain", "cape verde islands"):        "Mercedes-Benz Stadium, Atlanta, USA",
+    ("uruguay", "cape verde islands"):      "Hard Rock Stadium, Miami, USA",
+    ("cape verde islands", "saudi arabia"): "NRG Stadium, Houston, USA",
+    ("portugal", "congo dr"):               "NRG Stadium, Houston, USA",
+    ("colombia", "congo dr"):               "Estadio Akron, Guadalajara, Mexico",
+    ("congo dr", "uzbekistan"):             "Mercedes-Benz Stadium, Atlanta, USA",
 }
 
 
