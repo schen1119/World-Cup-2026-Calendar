@@ -377,857 +377,379 @@ def resolve_venue_parts(match):
     return (parts[0], parts[1]) if len(parts) > 1 else (parts[0], "")
 
 
-def build_standings_page(matches, team_group, as_of_str):
+# ── Stage labels ───────────────────────────────────────────────────────────────
+
+STAGE_LABELS = {
+    "LAST_32":       "Round of 32",
+    "LAST_16":       "Round of 16",
+    "QUARTER_FINALS":"Quarterfinal",
+    "SEMI_FINALS":   "Semifinal",
+    "THIRD_PLACE":   "3rd Place",
+    "FINAL":         "Final",
+}
+
+# ── Bracket slot layout ────────────────────────────────────────────────────────
+# Each entry: (utc_key, x, y, w, h, layout)
+#   layout 'left'   → text left-aligned (R32 boxes, both sides)
+#   layout 'center' → TBD-centred; switches to left-aligned when teams known
+#   layout 'final'  → special Final box (taller, two team rows + vs)
+#   layout 'third'  → 3rd-place box
+
+BRACKET_SLOTS = [
+    # Left R32 (x=2)
+    ("2026-06-28T19:00", 2,  57,  120, 52, "left"),
+    ("2026-06-29T17:00", 2, 163,  120, 52, "left"),
+    ("2026-06-29T20:30", 2, 269,  120, 52, "left"),
+    ("2026-06-30T01:00", 2, 375,  120, 52, "left"),
+    ("2026-06-30T17:00", 2, 481,  120, 52, "left"),
+    ("2026-06-30T21:00", 2, 587,  120, 52, "left"),   # MetLife
+    ("2026-07-01T01:00", 2, 693,  120, 52, "left"),
+    ("2026-07-01T16:00", 2, 799,  120, 52, "left"),
+    # Left R16 (x=142)
+    ("2026-07-04T17:00", 142, 110, 120, 52, "center"),
+    ("2026-07-04T21:00", 142, 322, 120, 52, "center"),
+    ("2026-07-05T20:00", 142, 534, 120, 52, "center"),  # MetLife
+    ("2026-07-06T00:00", 142, 746, 120, 52, "center"),
+    # Left QF (x=282)
+    ("2026-07-09T20:00", 282, 216, 120, 52, "center"),
+    ("2026-07-10T19:00", 282, 640, 120, 52, "center"),
+    # Left SF (x=422)
+    ("2026-07-14T19:00", 422, 428, 120, 52, "center"),
+    # Final (x=562, wider & taller)
+    ("2026-07-19T19:00", 562, 423, 138, 64, "final"),
+    # Right SF (x=720)
+    ("2026-07-15T19:00", 720, 428, 120, 52, "center"),
+    # Right QF (x=860)
+    ("2026-07-11T21:00", 860, 216, 120, 52, "center"),
+    ("2026-07-12T01:00", 860, 640, 120, 52, "center"),
+    # Right R16 (x=1000)
+    ("2026-07-06T19:00", 1000, 110, 120, 52, "center"),
+    ("2026-07-07T00:00", 1000, 322, 120, 52, "center"),
+    ("2026-07-07T16:00", 1000, 534, 120, 52, "center"),
+    ("2026-07-07T20:00", 1000, 746, 120, 52, "center"),
+    # Right R32 (x=1140)
+    ("2026-07-01T20:00", 1140,  57, 120, 52, "left"),
+    ("2026-07-02T00:00", 1140, 163, 120, 52, "left"),
+    ("2026-07-02T19:00", 1140, 269, 120, 52, "left"),
+    ("2026-07-02T23:00", 1140, 375, 120, 52, "left"),
+    ("2026-07-03T03:00", 1140, 481, 120, 52, "left"),
+    ("2026-07-03T18:00", 1140, 587, 120, 52, "left"),
+    ("2026-07-03T22:00", 1140, 693, 120, 52, "left"),
+    ("2026-07-04T01:30", 1140, 799, 120, 52, "left"),
+    # 3rd Place (x=562, same width as Final)
+    ("2026-07-18T21:00", 562, 894, 138, 52, "third"),
+]
+
+# SVG connector paths (pre-computed; coordinates match BRACKET_SLOTS above)
+_CONNECTORS = """\
+<g stroke="#2a3d5c" stroke-width="1.25" fill="none">
+  <path d="M122,83 H132 V189 M122,189 H132 M132,136 H142"/>
+  <path d="M122,295 H132 V401 M122,401 H132 M132,348 H142"/>
+  <path d="M122,507 H132 V613 M122,613 H132 M132,560 H142"/>
+  <path d="M122,719 H132 V825 M122,825 H132 M132,772 H142"/>
+  <path d="M262,136 H272 V348 M262,348 H272 M272,242 H282"/>
+  <path d="M262,560 H272 V772 M262,772 H272 M272,666 H282"/>
+  <path d="M402,242 H412 V666 M402,666 H412 M412,454 H422"/>
+  <line x1="542" y1="454" x2="562" y2="454"/>
+  <line x1="700" y1="454" x2="720" y2="454"/>
+  <path d="M860,242 H850 V666 M860,666 H850 M850,454 H840"/>
+  <path d="M1000,136 H990 V348 M1000,348 H990 M990,242 H980"/>
+  <path d="M1000,560 H990 V772 M1000,772 H990 M990,666 H980"/>
+  <path d="M1140,83 H1130 V189 M1140,189 H1130 M1130,136 H1120"/>
+  <path d="M1140,295 H1130 V401 M1140,401 H1130 M1130,348 H1120"/>
+  <path d="M1140,507 H1130 V613 M1140,613 H1130 M1130,560 H1120"/>
+  <path d="M1140,719 H1130 V825 M1140,825 H1130 M1130,772 H1120"/>
+  <line x1="482" y1="480" x2="482" y2="892" stroke-dasharray="5,3.5"/>
+  <line x1="780" y1="480" x2="780" y2="892" stroke-dasharray="5,3.5"/>
+  <line x1="482" y1="892" x2="562" y2="892"/>
+  <line x1="780" y1="892" x2="700" y2="892"/>
+</g>"""
+
+_ROUND_LABELS = """\
+<text x="62"   y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
+<text x="202"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="342"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="482"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="631"  y="17" font-size="8" font-weight="600" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
+<text x="780"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="920"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="1060" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="1200" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>"""
+
+
+def _hx(s):
+    """HTML-escape a string for safe embedding in SVG text."""
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def render_box(utc_key, x, y, w, h, layout, match):
     """
-    Returns an HTML string with:
-      1. Three-day fixture block: today → yesterday → tomorrow (Eastern time).
-      2. Full group standings (all groups, fully up-to-date).
-    Designed to be served as docs/index.html via GitHub Pages.
+    Return SVG string for one bracket slot.
+    match may be None if no API data found for this slot.
     """
-    stage_counts = {}
-    for m in matches:
-        s = m.get("stage", "MISSING")
-        stage_counts[s] = stage_counts.get(s, 0) + 1
-    print(f"  [HTML] Stage labels in API response: {stage_counts}")
+    m = match or {}
+    home_obj = (m.get("homeTeam") or {})
+    away_obj = (m.get("awayTeam") or {})
+    home = (home_obj.get("name") or "").strip()
+    away = (away_obj.get("name") or "").strip()
 
-    def is_group_stage(match):
-        return "GROUP" in (match.get("stage") or "").upper()
+    status = m.get("status", "")
+    score_data = m.get("score") or {}
+    ft   = score_data.get("fullTime") or {}
+    cs   = score_data.get("currentScore") or score_data.get("halfTime") or {}
+    winner   = score_data.get("winner", "")
+    duration = score_data.get("duration", "REGULAR")
 
-    # Maps football-data.org stage strings to display labels for knockout rounds
-    STAGE_DISPLAY = {
-        "LAST_32":       "Round of 32",
-        "LAST_16":       "Round of 16",
-        "QUARTER_FINALS":"Quarterfinal",
-        "SEMI_FINALS":   "Semifinal",
-        "THIRD_PLACE":   "3rd Place",
-        "FINAL":         "Final",
-    }
+    if status in FINISHED_STATUSES:
+        et_goals  = score_data.get("extraTime") or {}
+        hg = (ft.get("home") or 0) + (et_goals.get("home") or 0)
+        ag = (ft.get("away") or 0) + (et_goals.get("away") or 0)
+        has_score = True
+        is_live   = False
+        suffix    = "" if duration == "REGULAR" else (" (ET)" if duration == "EXTRA_TIME" else " (PEN)")
+    elif status in LIVE_STATUSES:
+        hg = cs.get("home") if cs.get("home") is not None else 0
+        ag = cs.get("away") if cs.get("away") is not None else 0
+        has_score = True
+        is_live   = True
+        suffix    = ""
+    else:
+        hg = ag = None
+        has_score = False
+        is_live   = False
+        suffix    = ""
 
-    def is_metlife(match):
-        return "metlife" in resolve_venue(match).lower()
+    # Winner/loser colouring for finished matches
+    if has_score and not is_live:
+        hc = "#e8eaf0" if winner != "AWAY_TEAM"  else "#7a8099"
+        ac = "#e8eaf0" if winner != "HOME_TEAM"  else "#7a8099"
+        hw = 'font-weight="600"' if winner == "HOME_TEAM" else ""
+        aw = 'font-weight="600"' if winner == "AWAY_TEAM" else ""
+    else:
+        hc = "#e8eaf0" if home else "#6b7280"
+        ac = "#e8eaf0" if away else "#6b7280"
+        hw = aw = ""
+
+    hi = 'font-style="italic"' if not home else ""
+    ai = 'font-style="italic"' if not away else ""
+    hd = _hx(home) if home else "TBD"
+    ad = _hx(away) if away else "TBD"
+
+    # Venue + date
+    venue_full = resolve_venue(m) if m else KNOCKOUT_VENUE_LOOKUP.get(utc_key, "")
+    vname = venue_full.split(", ", 1)[0] if venue_full else ""
+    is_ml = "metlife" in venue_full.lower()
 
     et_now = now_eastern()
-    eastern_tz = et_now.tzinfo
-    today_et     = et_now.date()
-    yesterday_et = today_et - datetime.timedelta(days=1)
-    tomorrow_et  = today_et + datetime.timedelta(days=1)
-
-    def kickoff_et(match):
-        utc = datetime.datetime.fromisoformat(match["utcDate"].replace("Z", "+00:00"))
-        return utc.astimezone(eastern_tz)
-
-    def fmt_last_updated(ts):
-        if not ts:
-            return None
+    et_tz  = et_now.tzinfo
+    utc_str = m.get("utcDate", "")
+    if utc_str:
         try:
-            dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-            dt_et = dt.astimezone(eastern_tz)
-            return dt_et.strftime("%I:%M %p ET").lstrip("0")
+            utc_dt  = datetime.datetime.fromisoformat(utc_str.replace("Z", "+00:00"))
+            et_dt   = utc_dt.astimezone(et_tz)
+            date_s  = et_dt.strftime("%b %-d")
+            time_s  = et_dt.strftime("%I:%M %p ET").lstrip("0")
+            meta    = f"{date_s} · {time_s}"
         except Exception:
-            return None
-
-    def match_card_html(match, is_today=False):
-        home = match["homeTeam"]["name"]
-        away = match["awayTeam"]["name"]
-        status = match.get("status", "")
-        score_data = (match.get("score") or {})
-        ft      = (score_data.get("fullTime") or {})
-        current = (score_data.get("currentScore") or score_data.get("halfTime") or {})
-        raw_group = match.get("group") or team_group.get(match["homeTeam"]["id"]) or ""
-        group_lbl = f"Group {group_letter(raw_group)}" if raw_group else ""
-        venue     = resolve_venue(match)
-        vname, vcity = resolve_venue_parts(match)
-        ko        = kickoff_et(match)
-        time_str  = ko.strftime("%I:%M %p ET").lstrip("0")
-        minute    = match.get("minute")
-        last_updated_raw = match.get("lastUpdated")
-
-        if status in FINISHED_STATUSES:
-            hg = ft.get("home") if ft.get("home") is not None else 0
-            ag = ft.get("away") if ft.get("away") is not None else 0
-            score_html   = f'<span class="score">{hg}</span><span class="score-sep">&ndash;</span><span class="score">{ag}</span>'
-            badge        = '<span class="badge badge-ft">FT</span>'
-            freshness_html = ""
-        elif status in LIVE_STATUSES:
-            hg = current.get("home") if current.get("home") is not None else 0
-            ag = current.get("away") if current.get("away") is not None else 0
-            score_html   = f'<span class="score">{hg}</span><span class="score-sep">&ndash;</span><span class="score">{ag}</span>'
-            minute_str   = f"{minute}'" if minute is not None else "in progress"
-            badge        = f'<span class="badge badge-live"><span class="live-dot"></span>Live &middot; {minute_str}</span>'
-            lu           = fmt_last_updated(last_updated_raw)
-            freshness_html = f'<div class="freshness">Score as of {minute_str} &nbsp;&middot;&nbsp; Data updated {lu}</div>' if lu else ""
-        else:
-            score_html     = '<span class="score-dash">vs</span>'
-            badge          = '<span class="badge badge-upcoming">Upcoming</span>'
-            freshness_html = ""
-
-        if vname and vcity:
-            vname_html = f'<span class="venue-metlife">{vname}</span>' if is_metlife(match) else vname
-            venue_display = f'{vname_html}, {vcity}'
-        elif venue:
-            venue_display = f'<span class="venue-metlife">{venue}</span>' if is_metlife(match) else venue
-        else:
-            venue_display = ""
-
-        venue_part  = f' &nbsp;&middot;&nbsp; {venue_display}' if venue_display else ""
-        today_class = " match-card-today" if is_today else ""
-        return f"""          <div class="match-card{today_class}">
-            <div class="card-top">{group_lbl}{venue_part}</div>
-            <div class="match-row">
-              <span class="team-name">{home}</span>
-              <div class="score-box">{score_html}</div>
-              <span class="team-name team-away">{away}</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">{time_str}</span>
-              {badge}
-            </div>{freshness_html}
-          </div>"""
-
-    def day_block_html(day_date, label_text, pill_class, pill_text):
-        day_matches = sorted(
-            [m for m in matches if is_group_stage(m) and kickoff_et(m).date() == day_date],
-            key=kickoff_et
-        )
-        if not day_matches:
-            return ""
-        is_today = (day_date == today_et)
-        cards = "\n".join(match_card_html(m, is_today=is_today) for m in day_matches)
-        date_str = day_date.strftime("%a, %b %-d")
-        return f"""      <div class="day-block">
-        <div class="day-header">
-          <span class="day-label">{date_str}</span>
-          <span class="day-pill {pill_class}">{pill_text}</span>
-          <span class="day-divider"></span>
-        </div>
-        <div class="matches-grid">
-{cards}
-        </div>
-      </div>"""
-
-    today_block     = day_block_html(today_et,     et_now.strftime("%A, %B %-d"), "pill-today",     "Today")
-    yesterday_block = day_block_html(yesterday_et, "",                             "pill-yesterday", "Yesterday")
-    tomorrow_block  = day_block_html(tomorrow_et,  "",                             "pill-tomorrow",  "Tomorrow")
-
-    fixtures_blocks = "\n".join(b for b in [today_block, tomorrow_block, yesterday_block] if b)
-    fixtures_section_html = f"""  <div class="fixtures-section">
-{fixtures_blocks}
-  </div>""" if fixtures_blocks else ""
-
-    # ------------------------------------------------------------------ #
-    # Section 2 – standings (computed from all finished matches)
-    # ------------------------------------------------------------------ #
-    by_group = defaultdict(lambda: defaultdict(new_team_stats))
-
-    for match in matches:
-        if not is_group_stage(match):
-            continue
-        home = match["homeTeam"]
-        away = match["awayTeam"]
-        raw_group = match.get("group") or team_group.get(home["id"]) or team_group.get(away["id"])
-        if not raw_group:
-            continue
-        letter = group_letter(raw_group)
-        # Pre-initialize so all 4 teams appear even before playing
-        if home["name"] not in by_group[letter]:
-            by_group[letter][home["name"]] = new_team_stats()
-        if away["name"] not in by_group[letter]:
-            by_group[letter][away["name"]] = new_team_stats()
-
-        status = match.get("status")
-        full_time = (match.get("score") or {}).get("fullTime") or {}
-        hg = full_time.get("home")
-        ag = full_time.get("away")
-        if status in FINISHED_STATUSES and hg is not None and ag is not None:
-            sh = by_group[letter][home["name"]]
-            sa = by_group[letter][away["name"]]
-            sh["P"] += 1; sa["P"] += 1
-            sh["GF"] += hg; sh["GA"] += ag
-            sa["GF"] += ag; sa["GA"] += hg
-            sh["GD"] = sh["GF"] - sh["GA"]
-            sa["GD"] = sa["GF"] - sa["GA"]
-            if hg > ag:
-                sh["W"] += 1; sh["Pts"] += 3; sa["L"] += 1
-            elif hg < ag:
-                sa["W"] += 1; sa["Pts"] += 3; sh["L"] += 1
-            else:
-                sh["D"] += 1; sh["Pts"] += 1; sa["D"] += 1; sa["Pts"] += 1
-
-    print(f"  [HTML] Groups found: {sorted(by_group.keys()) or 'NONE — group data missing from API response'}")
-
-    # Build group HTML blocks
-    group_blocks = []
-    for letter in sorted(by_group.keys()):
-        table = sort_table(dict(by_group[letter]))
-        rows_html = ""
-        for rank, (team, s) in enumerate(table, start=1):
-            gd_str = f"+{s['GD']}" if s["GD"] > 0 else str(s["GD"])
-            qualifier = " qualifier" if rank <= 2 else ""
-            rows_html += (
-                f'<tr class="row{qualifier}">'
-                f'<td class="rank">{rank}</td>'
-                f'<td class="team">{team}</td>'
-                f'<td>{s["P"]}</td>'
-                f'<td>{s["W"]}</td>'
-                f'<td>{s["D"]}</td>'
-                f'<td>{s["L"]}</td>'
-                f'<td>{s["GF"]}</td>'
-                f'<td>{s["GA"]}</td>'
-                f'<td class="gd">{gd_str}</td>'
-                f'<td class="pts">{s["Pts"]}</td>'
-                f'</tr>\n'
-            )
-        group_blocks.append(f"""
-    <div class="group">
-      <h2>Group {letter}</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-{rows_html}        </tbody>
-      </table>
-    </div>""")
-
-    if group_blocks:
-        groups_html = "\n".join(group_blocks)
+            meta = vname
     else:
-        groups_html = '<p class="no-data">Standings data is not yet available from the API.</p>'
+        meta = vname
 
-    # ------------------------------------------------------------------ #
-    # Section 3 – full schedule
-    # ------------------------------------------------------------------ #
-    def build_schedule_html():
-        all_matches = sorted(matches, key=lambda m: m["utcDate"])
-        if not all_matches:
-            return ""
+    vfill  = "#f5a623" if is_ml else "#7a8099"
+    vfw    = 'font-weight="600"' if is_ml else ""
+    vpfx   = "★ " if is_ml else ""
+    bstroke = "#f5a623" if layout == "final" else ("rgba(245,166,35,0.55)" if is_ml else "#1e2740")
+    bsw     = "1.5"     if layout == "final" else ("1"                     if is_ml else ".75")
 
-        def match_et_date(m):
-            utc = datetime.datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
-            return utc.astimezone(eastern_tz).date()
+    p  = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="4" fill="#131929" stroke="{bstroke}" stroke-width="{bsw}"/>']
+    cx = x + w // 2
+    sx = x + w - 6   # score right-edge x
 
-        def stage_label(m):
-            """Return the badge label for the time column."""
-            stage = (m.get("stage") or "").upper()
-            if "GROUP" in stage:
-                raw_group = m.get("group") or team_group.get(m["homeTeam"]["id"]) or ""
-                return f"GROUP {group_letter(raw_group)}" if raw_group else "Group Stage"
-            return STAGE_DISPLAY.get(stage, stage.replace("_", " ").title())
+    def team_row(ty, tc, ti, tw_, td, score_val):
+        row = [f'<text x="{x+8}" y="{ty}" font-size="12" fill="{tc}" {ti} {tw_}>{td}</text>']
+        if score_val is not None:
+            row.append(f'<text x="{sx}" y="{ty}" font-size="12" fill="{tc}" font-weight="700" text-anchor="end">{score_val}{suffix if score_val == hg else ""}</text>')
+        return row
 
-        def team_name(obj):
-            """Return team name, falling back to 'TBD' if not yet determined."""
-            name = (obj or {}).get("name") or ""
-            return name if name else "TBD"
+    if layout == "final":
+        # Taller 64px box: home / vs / away / venue
+        if has_score:
+            p.append(f'<text x="{cx-8}" y="{y+18}" font-size="11" fill="{hc}" {hi} text-anchor="end">{hd}</text>')
+            p.append(f'<text x="{cx+8}" y="{y+18}" font-size="11" fill="{hc}" font-weight="700" text-anchor="start">{hg}</text>')
+            p.append(f'<text x="{cx}"   y="{y+32}" font-size="8"  fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx-8}" y="{y+46}" font-size="11" fill="{ac}" {ai} text-anchor="end">{ad}</text>')
+            p.append(f'<text x="{cx+8}" y="{y+46}" font-size="11" fill="{ac}" font-weight="700" text-anchor="start">{ag}</text>')
+        else:
+            p.append(f'<text x="{cx}" y="{y+18}" font-size="11" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+32}" font-size="8"  fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx}" y="{y+46}" font-size="11" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
+        p.append(f'<text x="{cx}" y="{y+60}" font-size="8.5" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(vname)}</text>')
 
-        rows_by_date = {}
-        for m in all_matches:
-            rows_by_date.setdefault(match_et_date(m), []).append(m)
+    elif layout == "third":
+        if home or away:
+            p.append(f'<text x="{cx}" y="{y+20}" font-size="11" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+35}" font-size="11" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
+            p.append(f'<text x="{cx}" y="{y+48}" font-size="9"  fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
+        else:
+            p.append(f'<text x="{cx}" y="{y+22}" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>')
+            p.append(f'<text x="{cx}" y="{y+40}" font-size="9"  fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
 
-        # Identify the boundary between group stage and knockout dates for separator
-        group_dates    = {match_et_date(m) for m in all_matches if is_group_stage(m)}
-        knockout_dates = {match_et_date(m) for m in all_matches if not is_group_stage(m)}
-        first_ko_date  = min(knockout_dates) if knockout_dates else None
+    elif layout == "center" and not (home or away):
+        # Pure TBD centred
+        p.append(f'<text x="{cx}" y="{y+22}" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>')
+        p.append(f'<text x="{cx}" y="{y+40}" font-size="9"  fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
 
-        # Order: today first, then future dates ascending, then past dates ascending
-        all_dates  = sorted(rows_by_date.keys())
-        past_dates = [d for d in all_dates if d < today_et]
-        pres_dates = [d for d in all_dates if d == today_et]
-        future_dates = [d for d in all_dates if d > today_et]
-        ordered_dates = pres_dates + future_dates + past_dates
+    else:
+        # Left-aligned (R32 both sides, or center once teams known)
+        if has_score:
+            p += team_row(y+17, hc, hi, hw, hd, hg)
+            p += team_row(y+31, ac, ai, aw, ad, ag)
+        else:
+            p.append(f'<text x="{x+8}" y="{y+17}" font-size="12" fill="{hc}" {hi}>{hd}</text>')
+            p.append(f'<text x="{x+8}" y="{y+31}" font-size="12" fill="{ac}" {ai}>{ad}</text>')
+        p.append(f'<text x="{x+8}" y="{y+45}" font-size="9" fill="{vfill}" {vfw}>{vpfx}{_hx(meta)}</text>')
+        if is_live:
+            p.append(f'<circle cx="{x+w-8}" cy="{y+8}" r="3" fill="#f87171"/>')
 
-        date_blocks = []
-        past_divider_added = False
-        for date in ordered_dates:
-            day_matches = rows_by_date[date]
-            is_past = date < today_et
+    return "\n".join(p)
 
-            # Insert a "completed match days" divider before the first past date
-            if is_past and not past_divider_added:
-                date_blocks.append(
-                    '<div class="sched-past-header">'
-                    '<span class="sched-past-line"></span>'
-                    '<span class="sched-past-title">Completed match days</span>'
-                    '<span class="sched-past-line"></span>'
-                    '</div>'
-                )
-                past_divider_added = True
 
-            today_suffix = " &mdash; Today" if date == today_et else ""
-            date_label = date.strftime("%a, %b %-d") + today_suffix
-            past_class = " sched-date-group-past" if is_past else ""
+def build_bracket_page(matches, as_of_str):
+    """
+    Generate docs/index.html — the live knockout-stage bracket.
+    Teams, scores, and statuses update with each API refresh.
+    """
+    # Build lookup: utcDate[:16] → match object
+    by_utc = {}
+    for m in matches:
+        key = (m.get("utcDate") or "")[:16]
+        if key:
+            by_utc[key] = m
 
-            # Insert knockout stage divider before the first knockout date
-            ko_divider = ""
-            if date == first_ko_date:
-                ko_divider = (
-                    '<div class="sched-ko-header">'
-                    '<span class="sched-ko-line"></span>'
-                    '<span class="sched-ko-title">Knockout Stage</span>'
-                    '<span class="sched-ko-line"></span>'
-                    '</div>'
-                )
+    stage_counts = {}
+    for m in matches:
+        s = m.get("stage", "?")
+        stage_counts[s] = stage_counts.get(s, 0) + 1
+    print(f"  [HTML] Stage labels: {stage_counts}")
 
-            row_htmls = []
-            for m in day_matches:
-                home   = team_name(m.get("homeTeam"))
-                away   = team_name(m.get("awayTeam"))
-                status = m.get("status", "")
-                grp    = stage_label(m)
-                ko     = datetime.datetime.fromisoformat(
-                             m["utcDate"].replace("Z", "+00:00")
-                         ).astimezone(eastern_tz)
-                time_s = ko.strftime("%I:%M %p ET").lstrip("0")
+    # Render all bracket boxes
+    boxes = []
+    for (utc_key, x, y, w, h, layout) in BRACKET_SLOTS:
+        match = by_utc.get(utc_key)
+        boxes.append(render_box(utc_key, x, y, w, h, layout, match))
 
-                score_data = (m.get("score") or {})
-                ft      = (score_data.get("fullTime") or {})
-                current = (score_data.get("currentScore") or score_data.get("halfTime") or {})
+    # 3rd-place label (above the box)
+    third_label = '<text x="631" y="878" font-size="8" font-weight="600" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
 
-                if status in FINISHED_STATUSES:
-                    hg = ft.get("home") if ft.get("home") is not None else 0
-                    ag = ft.get("away") if ft.get("away") is not None else 0
-                    score_cell   = f'<span class="sched-score">{hg}</span><span class="sched-sep">&ndash;</span><span class="sched-score">{ag}</span>'
-                    status_label = '<span class="sched-status-ft">FT</span>'
-                    row_cls      = ""
-                elif status in LIVE_STATUSES:
-                    hg = current.get("home") if current.get("home") is not None else 0
-                    ag = current.get("away") if current.get("away") is not None else 0
-                    score_cell   = f'<span class="sched-score">{hg}</span><span class="sched-sep">&ndash;</span><span class="sched-score">{ag}</span>'
-                    status_label = '<span class="sched-status-live"><span class="sched-live-dot"></span>Live</span>'
-                    row_cls      = " sched-row-live"
-                else:
-                    score_cell   = '<span class="sched-vs">vs</span>'
-                    status_label = ""
-                    row_cls      = " sched-row-upcoming" if date == today_et else ""
-
-                if is_metlife(m):
-                    row_cls = row_cls.replace(" sched-row-metlife", "")
-
-                vname, vcity = resolve_venue_parts(m)
-                vname_display = f'<span class="sched-venue-name venue-metlife">{vname}</span>' if is_metlife(m) else f'<span class="sched-venue-name">{vname}</span>'
-                venue_html = (
-                    vname_display
-                    + f'<span class="sched-venue-city">{vcity}</span>'
-                    if vcity else
-                    vname_display
-                )
-
-                row_htmls.append(
-                    f'<div class="sched-row{row_cls}">'
-                    f'<div class="sched-col-time"><span class="sched-time">{time_s}</span><span class="sched-grp">{grp}</span></div>'
-                    f'<div class="sched-col-home">{home}</div>'
-                    f'<div class="sched-col-score">{score_cell}</div>'
-                    f'<div class="sched-col-away">{away}</div>'
-                    f'<div class="sched-col-venue">{status_label}{venue_html}</div>'
-                    f'</div>'
-                )
-
-            date_blocks.append(
-                ko_divider
-                + f'<div class="sched-date-group{past_class}">'
-                + f'<div class="sched-date-header">'
-                + f'<span class="sched-date-str">{date_label}</span>'
-                + f'<span class="sched-date-line"></span>'
-                + '</div>'
-                + "\n".join(row_htmls)
-                + "</div>"
-            )
-
-        return (
-            '<div class="schedule-section">'
-            '<p class="section-label">Full schedule</p>'
-            + "\n".join(date_blocks)
-            + "</div>"
-        )
-
-    schedule_html = build_schedule_html()
+    boxes_svg = "\n".join(boxes)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIFA World Cup 2026 &mdash; Group Stage</title>
+  <title>FIFA World Cup 2026 — Knockout Stage Bracket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0a0f1e;
       color: #e8eaf0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       min-height: 100vh;
-      padding: 2rem 1rem 4rem;
+      padding: 2rem 1.5rem 3rem;
     }}
-    .page-header {{
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }}
-    .page-header h1 {{
-      font-size: clamp(1.4rem, 4vw, 2.2rem);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: #ffffff;
-    }}
+    .page-header {{ text-align: center; margin-bottom: 2rem; }}
+    .page-header h1 {{ font-size: 1.6rem; font-weight: 600; color: #fff; letter-spacing: .02em; }}
     .page-header h1 span {{ color: #f5a623; }}
-    .updated {{ margin-top: 0.5rem; font-size: 0.8rem; color: #7a8099; }}
-    .subscribe {{
-      display: inline-block;
-      margin-top: 1.2rem;
-      padding: 0.5rem 1.2rem;
-      background: #1a6ef5;
-      color: #fff;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
+    .page-header p {{ margin-top: .4rem; font-size: .8rem; color: #7a8099; }}
+    .legend {{
+      display: flex; gap: 1.25rem; justify-content: center;
+      flex-wrap: wrap; margin-top: .9rem; font-size: .75rem; color: #7a8099;
     }}
-    .section-label {{
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #7a8099;
-      margin-bottom: 1rem;
-    }}
-    .fixtures-section {{
-      max-width: 1200px;
-      margin: 0 auto 2.5rem;
-    }}
-    .day-block {{ margin-bottom: 1.75rem; }}
-    .day-header {{
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 0.75rem;
-    }}
-    .day-label {{
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: #7a8099;
-      flex-shrink: 0;
-    }}
-    .day-pill {{
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 2px 8px;
-      border-radius: 99px;
-      flex-shrink: 0;
-    }}
-    .pill-today    {{ background: rgba(26,110,245,0.15); color: #60a5fa; }}
-    .pill-yesterday {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
-    .pill-tomorrow  {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
-    .day-divider {{
-      flex: 1;
-      height: 1px;
-      background: #1e2740;
-    }}
-    .matches-grid {{
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-      gap: 0.85rem;
-    }}
-    .match-card {{
-      background: #131929;
-      border: 1px solid #1e2740;
-      border-radius: 10px;
-      padding: 0.8rem 0.9rem;
-    }}
-    .match-card-today {{
-      border-color: #2a3d5c;
-    }}
-    .card-top {{
-      font-size: 0.7rem;
-      color: #7a8099;
-      margin-bottom: 0.55rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }}
-    .match-row {{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      margin-bottom: 0.55rem;
-    }}
-    .team-name {{
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #e8eaf0;
-      flex: 1;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }}
-    .team-away {{ text-align: right; }}
-    .score-box {{
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-    }}
-    .score {{
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #ffffff;
-      min-width: 1rem;
-      text-align: center;
-    }}
-    .score-sep {{ font-size: 0.9rem; color: #4a5270; }}
-    .score-dash {{ font-size: 0.8rem; color: #4a5270; padding: 0 0.25rem; }}
-    .card-bottom {{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }}
-    .match-time {{ font-size: 0.72rem; color: #7a8099; }}
-    .badge {{
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 2px 8px;
-      border-radius: 99px;
-    }}
-    .badge-live {{
-      background: rgba(220, 38, 38, 0.15);
-      color: #f87171;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }}
-    .live-dot {{
-      width: 5px; height: 5px;
-      background: #f87171;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }}
-    .badge-ft {{ background: rgba(255,255,255,0.06); color: #7a8099; }}
-    .badge-upcoming {{ background: rgba(255,255,255,0.04); color: #4a5270; }}
-    .freshness {{
-      margin-top: 0.4rem;
-      font-size: 0.65rem;
-      color: #4a5270;
-      font-style: italic;
-    }}
-    .standings-section {{ max-width: 1200px; margin: 0 auto; }}
-    .grid {{
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
-      gap: 1.5rem;
-    }}
-    .group {{
-      background: #131929;
-      border: 1px solid #1e2740;
-      border-radius: 10px;
-      overflow: hidden;
-    }}
-    .group h2 {{
-      padding: 0.75rem 1rem;
-      font-size: 0.9rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #f5a623;
-      background: #0e1424;
-      border-bottom: 1px solid #1e2740;
-    }}
-    table {{ width: 100%; border-collapse: collapse; font-size: 0.85rem; }}
-    thead tr {{ background: #0e1424; }}
-    th {{
-      padding: 0.45rem 0.5rem;
-      text-align: center;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      color: #7a8099;
-      text-transform: uppercase;
-      cursor: default;
-    }}
-    th.team {{ text-align: left; padding-left: 0.75rem; }}
-    td {{ padding: 0.5rem 0.5rem; text-align: center; border-top: 1px solid #1a2035; }}
-    td.team {{ text-align: left; padding-left: 0.75rem; font-weight: 500; }}
-    td.rank {{ color: #7a8099; font-size: 0.75rem; }}
-    td.pts  {{ font-weight: 700; color: #ffffff; }}
-    td.gd   {{ color: #a0aabf; }}
-    tr.row.qualifier {{ background: rgba(26, 110, 245, 0.08); }}
-    tr.row:hover     {{ background: #1a2240; }}
-    .no-data {{
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #4a5270;
-      font-size: 0.9rem;
-    }}
-    .qualifier-note {{
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.72rem;
-      color: #4a5270;
-    }}
-    .qualifier-note span {{
-      display: inline-block;
-      width: 10px; height: 10px;
-      background: rgba(26, 110, 245, 0.3);
-      border: 1px solid rgba(26, 110, 245, 0.5);
-      border-radius: 2px;
-      margin-right: 4px;
-      vertical-align: middle;
-    }}
-    footer {{
-      text-align: center;
-      margin-top: 3rem;
-      font-size: 0.72rem;
-      color: #4a5270;
-    }}
-    .schedule-section {{
-      max-width: 1200px;
-      margin: 3rem auto 0;
-    }}
-    .sched-date-group {{ margin-bottom: 1.5rem; }}
-    .sched-date-header {{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }}
-    .sched-date-str {{
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: #7a8099;
-      flex-shrink: 0;
-      white-space: nowrap;
-    }}
-    .sched-date-line {{
-      flex: 1;
-      height: 1px;
-      background: #1e2740;
-    }}
-    .sched-row {{
-      display: grid;
-      grid-template-columns: 76px 1fr 68px 1fr 120px;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 12px;
-      border-radius: 8px;
-      border: 0.5px solid #1e2740;
-      background: #131929;
-      margin-bottom: 4px;
-    }}
-    .sched-row-live     {{ border-color: #3d2020; }}
-    .sched-row-upcoming {{ border-color: #2a3d5c; }}
-    .sched-col-time .sched-time {{
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #a0aabf;
-    }}
-    .sched-col-time .sched-grp {{
-      display: block;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      color: #f5a623;
-      margin-top: 2px;
-    }}
-    .sched-col-home {{ text-align: right; font-size: 0.82rem; font-weight: 500; color: #e8eaf0; }}
-    .sched-col-away {{ text-align: left;  font-size: 0.82rem; font-weight: 500; color: #e8eaf0; }}
-    .sched-col-score {{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }}
-    .sched-score {{ font-size: 1rem; font-weight: 700; color: #ffffff; min-width: 12px; text-align: center; }}
-    .sched-sep   {{ font-size: 0.75rem; color: #4a5270; }}
-    .sched-vs    {{ font-size: 0.7rem; color: #4a5270; }}
-    .sched-col-venue {{ text-align: right; min-width: 0; }}
-    .sched-status-ft {{
-      display: block;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #4a5270;
-      margin-bottom: 2px;
-    }}
-    .sched-status-live {{
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 3px;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #f87171;
-      margin-bottom: 2px;
-    }}
-    .sched-live-dot {{
-      width: 5px; height: 5px;
-      background: #f87171;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }}
-    .sched-venue-name {{
-      display: block;
-      font-size: 0.7rem;
-      color: #a0aabf;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }}
-    .sched-venue-city {{
-      display: block;
-      font-size: 0.65rem;
-      color: #7a8099;
-      margin-top: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }}
-    .venue-metlife {{
-      font-weight: 700;
-      color: #f5a623;
-    }}
-    .sched-ko-header {{
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 2rem 0 1.25rem;
-    }}
-    .sched-ko-line {{
-      flex: 1;
-      height: 1px;
-      background: #2a3d5c;
-    }}
-    .sched-ko-title {{
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #f5a623;
-      flex-shrink: 0;
-    }}
-    .sched-date-group-past {{
-      opacity: 0.5;
-    }}
-    .sched-past-header {{
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 2rem 0 1.25rem;
-    }}
-    .sched-past-line {{
-      flex: 1;
-      height: 1px;
-      background: #1e2740;
-    }}
-    .sched-past-title {{
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #4a5270;
-      flex-shrink: 0;
+    .legend span {{ display: flex; align-items: center; gap: 5px; }}
+    .bracket-wrap {{ overflow-x: auto; padding: .5rem 0 1rem; }}
+    .footer-note {{
+      text-align: center; margin-top: 1.5rem;
+      font-size: .72rem; color: #4a5270;
+      max-width: 700px; margin-left: auto; margin-right: auto;
     }}
   </style>
 </head>
 <body>
-
-  <div class="page-header">
-    <h1>FIFA World Cup 2026 <span>Group Stage</span></h1>
-    <p class="updated">Last updated: {as_of_str} with latest available data from football-data.org</p>
-    <a class="subscribe"
-       href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics">
-      &#x1F4C5; Subscribe to Calendar
-    </a>
+<div class="page-header">
+  <h1>FIFA World Cup 2026 — <span>Knockout Stage</span></h1>
+  <p>Last updated: {as_of_str} with latest available data from football-data.org</p>
+  <div class="legend">
+    <span><span style="color:#e8eaf0;font-weight:600">●</span> Confirmed / result</span>
+    <span><span style="color:#7a8099">●</span> Eliminated / loser</span>
+    <span><span style="color:#6b7280;font-style:italic">●</span> TBD</span>
+    <span><span style="color:#f5a623">★</span> MetLife Stadium</span>
   </div>
-
-{fixtures_section_html}
-  <div class="standings-section">
-    <p class="section-label">Group standings</p>
-    <div class="grid">
-{groups_html}
-    </div>
-  </div>
-
-  <p class="qualifier-note">
-    <span></span>Top 2 teams in each group advance to the Round of 32.
-    Tiebreaker: points &rarr; goal difference &rarr; goals scored &rarr; head-to-head.
-  </p>
-
-  {schedule_html}
-
-  <footer>
-    Data via <a href="https://www.football-data.org" style="color:#4a5270">football-data.org</a>
-    &nbsp;&middot;&nbsp; Auto-updated via GitHub Actions
-  </footer>
-
+</div>
+<div class="bracket-wrap">
+<svg width="1262" height="975"
+     viewBox="0 0 1262 975"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif">
+{_ROUND_LABELS}
+{_CONNECTORS}
+{third_label}
+{boxes_svg}
+</svg>
+</div>
+<p class="footer-note">
+  Bracket connections between rounds are based on the official FIFA schedule.
+  Teams, scores, and results update automatically with each refresh.
+  &nbsp;·&nbsp; Subscribe to the full calendar (group + knockout):
+  <a href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics"
+     style="color:#60a5fa">calendar feed</a>
+</p>
 </body>
 </html>
 """
 
 
+def ko_uid(utc_key):
+    """Stable UID for a knockout match event, keyed on its kickoff slot."""
+    h_ = hashlib.md5(utc_key.encode()).hexdigest()[:16]
+    return f"{h_}@worldcup2026-knockout"
+
+
 def build_calendar(matches, team_group, as_of_str):
-    by_group = defaultdict(list)
-
+    """
+    Build the full .ics feed covering:
+      • All 72 group-stage matches (with progressive standings in descriptions)
+      • All 32 knockout-stage matches (with round / venue / ET time in descriptions)
+    """
     def is_group_stage(match):
-        stage = (match.get("stage") or "").upper()
-        return "GROUP" in stage
+        return "GROUP" in (match.get("stage") or "").upper()
 
+    # ── Group stage ────────────────────────────────────────────────────────────
+    by_group = defaultdict(list)
     for match in matches:
         if not is_group_stage(match):
             continue
-
-        home = match["homeTeam"]
-        away = match["awayTeam"]
-
-        raw_group = match.get("group")
-        if not raw_group:
-            raw_group = team_group.get(home["id"]) or team_group.get(away["id"])
-        if not raw_group:
+        home    = match["homeTeam"]
+        away    = match["awayTeam"]
+        raw_grp = match.get("group") or team_group.get(home["id"]) or team_group.get(away["id"])
+        if not raw_grp:
             continue
-        letter = group_letter(raw_group)
-
-        md = match.get("matchday")
-
+        letter  = group_letter(raw_grp)
+        md      = match.get("matchday")
         kickoff = datetime.datetime.fromisoformat(match["utcDate"].replace("Z", "+00:00"))
         kickoff_utc = kickoff.astimezone(datetime.timezone.utc).replace(tzinfo=None)
-
-        venue = match.get("venue") or "TBD"
-
-        status = match.get("status")
-        full_time = (match.get("score") or {}).get("fullTime") or {}
-        goals_home = full_time.get("home")
-        goals_away = full_time.get("away")
-        score = (
-            (goals_home, goals_away)
-            if status in FINISHED_STATUSES
-            and goals_home is not None
-            and goals_away is not None
-            else None
-        )
-
+        venue   = resolve_venue(match) or "TBD"
+        status  = match.get("status")
+        full_t  = (match.get("score") or {}).get("fullTime") or {}
+        gh, ga  = full_t.get("home"), full_t.get("away")
+        score   = (gh, ga) if status in FINISHED_STATUSES and gh is not None else None
         by_group[letter].append({
-            "matchday": md,
-            "kickoff": kickoff_utc,
-            "home": home["name"],
-            "away": away["name"],
-            "venue": venue,
-            "score": score,
+            "matchday": md, "kickoff": kickoff_utc,
+            "home": home["name"], "away": away["name"],
+            "venue": venue, "score": score,
         })
 
     for letter in by_group:
@@ -1239,12 +761,12 @@ def build_calendar(matches, team_group, as_of_str):
         "PRODID:-//World Cup 2026 Auto-Updater//EN",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
-        "X-WR-CALNAME:FIFA World Cup 2026 - Group Stage (Live)",
-        "X-WR-CALDESC:Auto-updated group stage schedule and standings, refreshed via football-data.org.",
+        "X-WR-CALNAME:FIFA World Cup 2026 - Complete Schedule",
+        "X-WR-CALDESC:Auto-updated calendar: all 72 group-stage + 32 knockout matches, refreshed via football-data.org.",
         "X-WR-TIMEZONE:UTC",
     ]
 
-    now_stamp = fmt_ics_dt(datetime.datetime.utcnow())
+    now_stamp   = fmt_ics_dt(datetime.datetime.utcnow())
     event_count = 0
 
     for letter, glist in sorted(by_group.items()):
@@ -1256,19 +778,18 @@ def build_calendar(matches, team_group, as_of_str):
         matchdays = sorted(set(m["matchday"] for m in glist if m["matchday"]))
         for md_num in matchdays:
             md_matches = [m for m in glist if m["matchday"] == md_num]
-            md_label = "before Matchday 1" if md_num == 1 else f"after Matchday {md_num - 1}"
-            desc_standings = standings_block(letter, stats, md_label, as_of_str)
+            md_label   = "before Matchday 1" if md_num == 1 else f"after Matchday {md_num - 1}"
+            desc_std   = standings_block(letter, stats, md_label, as_of_str)
 
             for m in md_matches:
-                end = m["kickoff"] + datetime.timedelta(hours=2)
-                uid = stable_uid(letter, m["home"], m["away"])
-                summary = f"Group {letter}: {m['home']} vs {m['away']}"
-                location = m["venue"]
+                end  = m["kickoff"] + datetime.timedelta(hours=2)
+                uid  = stable_uid(letter, m["home"], m["away"])
+                summ = f"Group {letter}: {m['home']} vs {m['away']}"
                 desc = (
                     f"FIFA World Cup 2026 Group Stage - Group {letter}\n"
                     f"{m['home']} vs {m['away']}\n"
-                    f"Venue: {location}\n\n"
-                    f"{desc_standings}"
+                    f"Venue: {m['venue']}\n\n"
+                    f"{desc_std}"
                 )
                 lines += [
                     "BEGIN:VEVENT",
@@ -1276,8 +797,8 @@ def build_calendar(matches, team_group, as_of_str):
                     f"DTSTAMP:{now_stamp}",
                     f"DTSTART:{fmt_ics_dt(m['kickoff'])}",
                     f"DTEND:{fmt_ics_dt(end)}",
-                    f"SUMMARY:{escape_ics_text(summary)}",
-                    f"LOCATION:{escape_ics_text(location)}",
+                    f"SUMMARY:{escape_ics_text(summ)}",
+                    f"LOCATION:{escape_ics_text(m['venue'])}",
                     f"DESCRIPTION:{escape_ics_text(desc)}",
                     "END:VEVENT",
                 ]
@@ -1300,13 +821,59 @@ def build_calendar(matches, team_group, as_of_str):
                         sh["D"] += 1; sh["Pts"] += 1
                         sa["D"] += 1; sa["Pts"] += 1
 
+    # ── Knockout stage ─────────────────────────────────────────────────────────
+    et_tz = now_eastern().tzinfo
+    for match in sorted(matches, key=lambda m: m.get("utcDate", "")):
+        stage = (match.get("stage") or "").upper()
+        if is_group_stage(match) or not stage:
+            continue
+        round_label = STAGE_LABELS.get(stage, stage.replace("_", " ").title())
+        utc_key     = (match.get("utcDate") or "")[:16]
+        venue_full  = resolve_venue(match) or KNOCKOUT_VENUE_LOOKUP.get(utc_key, "TBD")
+
+        home_obj = match.get("homeTeam") or {}
+        away_obj = match.get("awayTeam") or {}
+        home_nm  = (home_obj.get("name") or "").strip() or "TBD"
+        away_nm  = (away_obj.get("name") or "").strip() or "TBD"
+
+        kickoff = datetime.datetime.fromisoformat(
+            (match.get("utcDate") or "2026-01-01T00:00:00Z").replace("Z", "+00:00")
+        )
+        kickoff_utc = kickoff.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+        kickoff_et  = kickoff.astimezone(et_tz)
+        et_str      = kickoff_et.strftime("%-m/%-d at %-I:%M %p ET")
+
+        # End: 2.5h to allow for extra time and penalties
+        end = kickoff_utc + datetime.timedelta(hours=2, minutes=30)
+
+        uid  = ko_uid(utc_key)
+        summ = f"{round_label}: {home_nm} vs {away_nm}"
+        desc = (
+            f"FIFA World Cup 2026 — {round_label}\n"
+            f"{home_nm} vs {away_nm}\n"
+            f"Kickoff: {et_str}\n"
+            f"Venue: {venue_full}"
+        )
+        lines += [
+            "BEGIN:VEVENT",
+            f"UID:{uid}",
+            f"DTSTAMP:{now_stamp}",
+            f"DTSTART:{fmt_ics_dt(kickoff_utc)}",
+            f"DTEND:{fmt_ics_dt(end)}",
+            f"SUMMARY:{escape_ics_text(summ)}",
+            f"LOCATION:{escape_ics_text(venue_full)}",
+            f"DESCRIPTION:{escape_ics_text(desc)}",
+            "END:VEVENT",
+        ]
+        event_count += 1
+
     lines.append("END:VCALENDAR")
     return "\r\n".join(lines) + "\r\n", event_count
 
 
 def main():
-    api_key = get_api_key()
-    as_of_str = as_of_string()   # e.g. "6/21/2026 at 3:45 PM EDT"
+    api_key   = get_api_key()
+    as_of_str = as_of_string()
 
     print("Step 1: Finding the correct season and fetching matches...")
     season, matches = find_working_season(api_key)
@@ -1318,30 +885,25 @@ def main():
         team_group = derive_team_to_group_from_matches(matches)
     if not team_group:
         sys.exit(
-            "ERROR: Could not determine group assignments from either standings or match data. "
-            "The API may not be returning group information for this competition/season yet."
+            "ERROR: Could not determine group assignments. "
+            "The API may not be returning group information yet."
         )
     print(f"  Found {len(set(team_group.values()))} groups covering {len(team_group)} teams.")
 
-    print("Step 3: Building calendar (.ics)...")
+    print("Step 3: Building calendar (.ics — group + knockout)...")
     ics_text, event_count = build_calendar(matches, team_group, as_of_str)
-
     if event_count == 0:
-        sys.exit(
-            "ERROR: Built 0 events. Group-stage matches were found but could not be "
-            "processed -- check that the 'group' field is present on match objects."
-        )
-
+        sys.exit("ERROR: Built 0 ICS events — check that matches include group-stage data.")
     os.makedirs(os.path.dirname(OUTPUT_ICS), exist_ok=True)
     with open(OUTPUT_ICS, "w") as f:
         f.write(ics_text)
     print(f"  Wrote {event_count} events to {OUTPUT_ICS}")
 
-    print("Step 4: Building standings page (index.html)...")
-    html = build_standings_page(matches, team_group, as_of_str)
+    print("Step 4: Building bracket page (index.html)...")
+    html = build_bracket_page(matches, as_of_str)
     with open(OUTPUT_HTML, "w") as f:
         f.write(html)
-    print(f"  Wrote standings page to {OUTPUT_HTML}")
+    print(f"  Wrote bracket page to {OUTPUT_HTML}")
 
     print(f"\nDone (season={season}, as of {as_of_str}).")
 
