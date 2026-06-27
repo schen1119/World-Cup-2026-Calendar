@@ -3,991 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIFA World Cup 2026 &mdash; Group Stage</title>
+  <title>FIFA World Cup 2026 — Knockout Stage Bracket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0a0f1e;
       color: #e8eaf0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       min-height: 100vh;
-      padding: 2rem 1rem 4rem;
+      padding: 2rem 1.5rem 3rem;
     }
-    .page-header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-    .page-header h1 {
-      font-size: clamp(1.4rem, 4vw, 2.2rem);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: #ffffff;
-    }
+    .page-header { text-align: center; margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.6rem; font-weight: 600; color: #fff; letter-spacing: .02em; }
     .page-header h1 span { color: #f5a623; }
-    .updated { margin-top: 0.5rem; font-size: 0.8rem; color: #7a8099; }
-    .subscribe {
-      display: inline-block;
-      margin-top: 1.2rem;
-      padding: 0.5rem 1.2rem;
-      background: #1a6ef5;
-      color: #fff;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
+    .page-header p { margin-top: .4rem; font-size: .8rem; color: #7a8099; }
+    .legend {
+      display: flex; gap: 1.25rem; justify-content: center;
+      flex-wrap: wrap; margin-top: .9rem; font-size: .75rem; color: #7a8099;
     }
-    .section-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #7a8099;
-      margin-bottom: 1rem;
-    }
-    .fixtures-section {
-      max-width: 1200px;
-      margin: 0 auto 2.5rem;
-    }
-    .day-block { margin-bottom: 1.75rem; }
-    .day-header {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 0.75rem;
-    }
-    .day-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: #7a8099;
-      flex-shrink: 0;
-    }
-    .day-pill {
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 2px 8px;
-      border-radius: 99px;
-      flex-shrink: 0;
-    }
-    .pill-today    { background: rgba(26,110,245,0.15); color: #60a5fa; }
-    .pill-yesterday { background: rgba(255,255,255,0.06); color: #7a8099; }
-    .pill-tomorrow  { background: rgba(255,255,255,0.06); color: #7a8099; }
-    .day-divider {
-      flex: 1;
-      height: 1px;
-      background: #1e2740;
-    }
-    .matches-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-      gap: 0.85rem;
-    }
-    .match-card {
-      background: #131929;
-      border: 1px solid #1e2740;
-      border-radius: 10px;
-      padding: 0.8rem 0.9rem;
-    }
-    .match-card-today {
-      border-color: #2a3d5c;
-    }
-    .card-top {
-      font-size: 0.7rem;
-      color: #7a8099;
-      margin-bottom: 0.55rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .match-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      margin-bottom: 0.55rem;
-    }
-    .team-name {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #e8eaf0;
-      flex: 1;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .team-away { text-align: right; }
-    .score-box {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-    .score {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #ffffff;
-      min-width: 1rem;
-      text-align: center;
-    }
-    .score-sep { font-size: 0.9rem; color: #4a5270; }
-    .score-dash { font-size: 0.8rem; color: #4a5270; padding: 0 0.25rem; }
-    .card-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .match-time { font-size: 0.72rem; color: #7a8099; }
-    .badge {
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 2px 8px;
-      border-radius: 99px;
-    }
-    .badge-live {
-      background: rgba(220, 38, 38, 0.15);
-      color: #f87171;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .live-dot {
-      width: 5px; height: 5px;
-      background: #f87171;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .badge-ft { background: rgba(255,255,255,0.06); color: #7a8099; }
-    .badge-upcoming { background: rgba(255,255,255,0.04); color: #4a5270; }
-    .freshness {
-      margin-top: 0.4rem;
-      font-size: 0.65rem;
-      color: #4a5270;
-      font-style: italic;
-    }
-    .standings-section { max-width: 1200px; margin: 0 auto; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
-      gap: 1.5rem;
-    }
-    .group {
-      background: #131929;
-      border: 1px solid #1e2740;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .group h2 {
-      padding: 0.75rem 1rem;
-      font-size: 0.9rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #f5a623;
-      background: #0e1424;
-      border-bottom: 1px solid #1e2740;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    thead tr { background: #0e1424; }
-    th {
-      padding: 0.45rem 0.5rem;
-      text-align: center;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      color: #7a8099;
-      text-transform: uppercase;
-      cursor: default;
-    }
-    th.team { text-align: left; padding-left: 0.75rem; }
-    td { padding: 0.5rem 0.5rem; text-align: center; border-top: 1px solid #1a2035; }
-    td.team { text-align: left; padding-left: 0.75rem; font-weight: 500; }
-    td.rank { color: #7a8099; font-size: 0.75rem; }
-    td.pts  { font-weight: 700; color: #ffffff; }
-    td.gd   { color: #a0aabf; }
-    tr.row.qualifier { background: rgba(26, 110, 245, 0.08); }
-    tr.row:hover     { background: #1a2240; }
-    .no-data {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #4a5270;
-      font-size: 0.9rem;
-    }
-    .qualifier-note {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.72rem;
-      color: #4a5270;
-    }
-    .qualifier-note span {
-      display: inline-block;
-      width: 10px; height: 10px;
-      background: rgba(26, 110, 245, 0.3);
-      border: 1px solid rgba(26, 110, 245, 0.5);
-      border-radius: 2px;
-      margin-right: 4px;
-      vertical-align: middle;
-    }
-    footer {
-      text-align: center;
-      margin-top: 3rem;
-      font-size: 0.72rem;
-      color: #4a5270;
-    }
-    .schedule-section {
-      max-width: 1200px;
-      margin: 3rem auto 0;
-    }
-    .sched-date-group { margin-bottom: 1.5rem; }
-    .sched-date-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .sched-date-str {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: #7a8099;
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-    .sched-date-line {
-      flex: 1;
-      height: 1px;
-      background: #1e2740;
-    }
-    .sched-row {
-      display: grid;
-      grid-template-columns: 76px 1fr 68px 1fr 120px;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 12px;
-      border-radius: 8px;
-      border: 0.5px solid #1e2740;
-      background: #131929;
-      margin-bottom: 4px;
-    }
-    .sched-row-live     { border-color: #3d2020; }
-    .sched-row-upcoming { border-color: #2a3d5c; }
-    .sched-col-time .sched-time {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #a0aabf;
-    }
-    .sched-col-time .sched-grp {
-      display: block;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      color: #f5a623;
-      margin-top: 2px;
-    }
-    .sched-col-home { text-align: right; font-size: 0.82rem; font-weight: 500; color: #e8eaf0; }
-    .sched-col-away { text-align: left;  font-size: 0.82rem; font-weight: 500; color: #e8eaf0; }
-    .sched-col-score {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }
-    .sched-score { font-size: 1rem; font-weight: 700; color: #ffffff; min-width: 12px; text-align: center; }
-    .sched-sep   { font-size: 0.75rem; color: #4a5270; }
-    .sched-vs    { font-size: 0.7rem; color: #4a5270; }
-    .sched-col-venue { text-align: right; min-width: 0; }
-    .sched-status-ft {
-      display: block;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #4a5270;
-      margin-bottom: 2px;
-    }
-    .sched-status-live {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 3px;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #f87171;
-      margin-bottom: 2px;
-    }
-    .sched-live-dot {
-      width: 5px; height: 5px;
-      background: #f87171;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .sched-venue-name {
-      display: block;
-      font-size: 0.7rem;
-      color: #a0aabf;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .sched-venue-city {
-      display: block;
-      font-size: 0.65rem;
-      color: #7a8099;
-      margin-top: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .venue-metlife {
-      font-weight: 700;
-      color: #f5a623;
-    }
-    .sched-ko-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 2rem 0 1.25rem;
-    }
-    .sched-ko-line {
-      flex: 1;
-      height: 1px;
-      background: #2a3d5c;
-    }
-    .sched-ko-title {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #f5a623;
-      flex-shrink: 0;
-    }
-    .sched-date-group-past {
-      opacity: 0.5;
-    }
-    .sched-past-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 2rem 0 1.25rem;
-    }
-    .sched-past-line {
-      flex: 1;
-      height: 1px;
-      background: #1e2740;
-    }
-    .sched-past-title {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #4a5270;
-      flex-shrink: 0;
+    .legend span { display: flex; align-items: center; gap: 5px; }
+    .bracket-wrap { overflow-x: auto; padding: .5rem 0 1rem; }
+    .footer-note {
+      text-align: center; margin-top: 1.5rem;
+      font-size: .72rem; color: #4a5270;
+      max-width: 700px; margin-left: auto; margin-right: auto;
     }
   </style>
 </head>
 <body>
-
-  <div class="page-header">
-    <h1>FIFA World Cup 2026 <span>Group Stage</span></h1>
-    <p class="updated">Last updated: 6/27/2026 at 7:40 PM EDT with latest available data from football-data.org</p>
-    <a class="subscribe"
-       href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics">
-      &#x1F4C5; Subscribe to Calendar
-    </a>
+<div class="page-header">
+  <h1>FIFA World Cup 2026 — <span>Knockout Stage</span></h1>
+  <p>Last updated: 6/27/2026 at 7:43 PM EDT with latest available data from football-data.org</p>
+  <div class="legend">
+    <span><span style="color:#e8eaf0;font-weight:600">●</span> Confirmed / result</span>
+    <span><span style="color:#7a8099">●</span> Eliminated / loser</span>
+    <span><span style="color:#6b7280;font-style:italic">●</span> TBD</span>
+    <span><span style="color:#f5a623">★</span> MetLife Stadium</span>
   </div>
-
-  <div class="fixtures-section">
-      <div class="day-block">
-        <div class="day-header">
-          <span class="day-label">Sat, Jun 27</span>
-          <span class="day-pill pill-today">Today</span>
-          <span class="day-divider"></span>
-        </div>
-        <div class="matches-grid">
-          <div class="match-card match-card-today">
-            <div class="card-top">Group L &nbsp;&middot;&nbsp; <span class="venue-metlife">MetLife Stadium</span>, East Rutherford, USA</div>
-            <div class="match-row">
-              <span class="team-name">Panama</span>
-              <div class="score-box"><span class="score">0</span><span class="score-sep">&ndash;</span><span class="score">2</span></div>
-              <span class="team-name team-away">England</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">5:00 PM ET</span>
-              <span class="badge badge-ft">FT</span>
-            </div>
-          </div>
-          <div class="match-card match-card-today">
-            <div class="card-top">Group L &nbsp;&middot;&nbsp; Lincoln Financial Field, Philadelphia, USA</div>
-            <div class="match-row">
-              <span class="team-name">Croatia</span>
-              <div class="score-box"><span class="score">2</span><span class="score-sep">&ndash;</span><span class="score">1</span></div>
-              <span class="team-name team-away">Ghana</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">5:00 PM ET</span>
-              <span class="badge badge-ft">FT</span>
-            </div>
-          </div>
-          <div class="match-card match-card-today">
-            <div class="card-top">Group K &nbsp;&middot;&nbsp; Hard Rock Stadium, Miami, USA</div>
-            <div class="match-row">
-              <span class="team-name">Colombia</span>
-              <div class="score-box"><span class="score-dash">vs</span></div>
-              <span class="team-name team-away">Portugal</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">7:30 PM ET</span>
-              <span class="badge badge-upcoming">Upcoming</span>
-            </div>
-          </div>
-          <div class="match-card match-card-today">
-            <div class="card-top">Group K &nbsp;&middot;&nbsp; Mercedes-Benz Stadium, Atlanta, USA</div>
-            <div class="match-row">
-              <span class="team-name">Congo DR</span>
-              <div class="score-box"><span class="score-dash">vs</span></div>
-              <span class="team-name team-away">Uzbekistan</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">7:30 PM ET</span>
-              <span class="badge badge-upcoming">Upcoming</span>
-            </div>
-          </div>
-          <div class="match-card match-card-today">
-            <div class="card-top">Group J &nbsp;&middot;&nbsp; AT&T Stadium, Arlington, USA</div>
-            <div class="match-row">
-              <span class="team-name">Jordan</span>
-              <div class="score-box"><span class="score-dash">vs</span></div>
-              <span class="team-name team-away">Argentina</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">10:00 PM ET</span>
-              <span class="badge badge-upcoming">Upcoming</span>
-            </div>
-          </div>
-          <div class="match-card match-card-today">
-            <div class="card-top">Group J &nbsp;&middot;&nbsp; Arrowhead Stadium, Kansas City, USA</div>
-            <div class="match-row">
-              <span class="team-name">Algeria</span>
-              <div class="score-box"><span class="score-dash">vs</span></div>
-              <span class="team-name team-away">Austria</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">10:00 PM ET</span>
-              <span class="badge badge-upcoming">Upcoming</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="day-block">
-        <div class="day-header">
-          <span class="day-label">Fri, Jun 26</span>
-          <span class="day-pill pill-yesterday">Yesterday</span>
-          <span class="day-divider"></span>
-        </div>
-        <div class="matches-grid">
-          <div class="match-card">
-            <div class="card-top">Group I &nbsp;&middot;&nbsp; Gillette Stadium, Foxborough, USA</div>
-            <div class="match-row">
-              <span class="team-name">Norway</span>
-              <div class="score-box"><span class="score-dash">vs</span></div>
-              <span class="team-name team-away">France</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">3:00 PM ET</span>
-              <span class="badge badge-upcoming">Upcoming</span>
-            </div>
-          </div>
-          <div class="match-card">
-            <div class="card-top">Group I &nbsp;&middot;&nbsp; BMO Field, Toronto, Canada</div>
-            <div class="match-row">
-              <span class="team-name">Senegal</span>
-              <div class="score-box"><span class="score-dash">vs</span></div>
-              <span class="team-name team-away">Iraq</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">3:00 PM ET</span>
-              <span class="badge badge-upcoming">Upcoming</span>
-            </div>
-          </div>
-          <div class="match-card">
-            <div class="card-top">Group H &nbsp;&middot;&nbsp; Estadio Akron, Guadalajara, Mexico</div>
-            <div class="match-row">
-              <span class="team-name">Uruguay</span>
-              <div class="score-box"><span class="score">0</span><span class="score-sep">&ndash;</span><span class="score">1</span></div>
-              <span class="team-name team-away">Spain</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">8:00 PM ET</span>
-              <span class="badge badge-ft">FT</span>
-            </div>
-          </div>
-          <div class="match-card">
-            <div class="card-top">Group H &nbsp;&middot;&nbsp; NRG Stadium, Houston, USA</div>
-            <div class="match-row">
-              <span class="team-name">Cape Verde Islands</span>
-              <div class="score-box"><span class="score">0</span><span class="score-sep">&ndash;</span><span class="score">0</span></div>
-              <span class="team-name team-away">Saudi Arabia</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">8:00 PM ET</span>
-              <span class="badge badge-ft">FT</span>
-            </div>
-          </div>
-          <div class="match-card">
-            <div class="card-top">Group G &nbsp;&middot;&nbsp; BC Place, Vancouver, Canada</div>
-            <div class="match-row">
-              <span class="team-name">New Zealand</span>
-              <div class="score-box"><span class="score">1</span><span class="score-sep">&ndash;</span><span class="score">5</span></div>
-              <span class="team-name team-away">Belgium</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">11:00 PM ET</span>
-              <span class="badge badge-ft">FT</span>
-            </div>
-          </div>
-          <div class="match-card">
-            <div class="card-top">Group G &nbsp;&middot;&nbsp; Lumen Field, Seattle, USA</div>
-            <div class="match-row">
-              <span class="team-name">Egypt</span>
-              <div class="score-box"><span class="score">1</span><span class="score-sep">&ndash;</span><span class="score">2</span></div>
-              <span class="team-name team-away">Iran</span>
-            </div>
-            <div class="card-bottom">
-              <span class="match-time">11:00 PM ET</span>
-              <span class="badge badge-ft">FT</span>
-            </div>
-          </div>
-        </div>
-      </div>
-  </div>
-  <div class="standings-section">
-    <p class="section-label">Group standings</p>
-    <div class="grid">
-
-    <div class="group">
-      <h2>Group A</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Mexico</td><td>3</td><td>3</td><td>0</td><td>0</td><td>6</td><td>0</td><td class="gd">+6</td><td class="pts">9</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">South Africa</td><td>3</td><td>1</td><td>1</td><td>1</td><td>2</td><td>3</td><td class="gd">-1</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">South Korea</td><td>3</td><td>1</td><td>0</td><td>2</td><td>2</td><td>3</td><td class="gd">-1</td><td class="pts">3</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Czechia</td><td>3</td><td>0</td><td>1</td><td>2</td><td>2</td><td>6</td><td class="gd">-4</td><td class="pts">1</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group B</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Switzerland</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td><td>3</td><td class="gd">+4</td><td class="pts">7</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Canada</td><td>3</td><td>1</td><td>1</td><td>1</td><td>8</td><td>3</td><td class="gd">+5</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Bosnia-Herzegovina</td><td>3</td><td>1</td><td>1</td><td>1</td><td>5</td><td>6</td><td class="gd">-1</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Qatar</td><td>3</td><td>0</td><td>1</td><td>2</td><td>2</td><td>10</td><td class="gd">-8</td><td class="pts">1</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group C</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Brazil</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td><td>1</td><td class="gd">+6</td><td class="pts">7</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Morocco</td><td>3</td><td>2</td><td>1</td><td>0</td><td>6</td><td>3</td><td class="gd">+3</td><td class="pts">7</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Scotland</td><td>3</td><td>1</td><td>0</td><td>2</td><td>1</td><td>4</td><td class="gd">-3</td><td class="pts">3</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Haiti</td><td>3</td><td>0</td><td>0</td><td>3</td><td>2</td><td>8</td><td class="gd">-6</td><td class="pts">0</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group D</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">United States</td><td>3</td><td>2</td><td>0</td><td>1</td><td>8</td><td>4</td><td class="gd">+4</td><td class="pts">6</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Australia</td><td>3</td><td>1</td><td>1</td><td>1</td><td>2</td><td>2</td><td class="gd">0</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Paraguay</td><td>3</td><td>1</td><td>1</td><td>1</td><td>2</td><td>4</td><td class="gd">-2</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Turkey</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td><td>5</td><td class="gd">-2</td><td class="pts">3</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group E</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Germany</td><td>3</td><td>2</td><td>0</td><td>1</td><td>10</td><td>4</td><td class="gd">+6</td><td class="pts">6</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Ivory Coast</td><td>3</td><td>2</td><td>0</td><td>1</td><td>4</td><td>2</td><td class="gd">+2</td><td class="pts">6</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Ecuador</td><td>3</td><td>1</td><td>1</td><td>1</td><td>2</td><td>2</td><td class="gd">0</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Curaçao</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td><td>9</td><td class="gd">-8</td><td class="pts">1</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group F</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Netherlands</td><td>3</td><td>2</td><td>1</td><td>0</td><td>10</td><td>4</td><td class="gd">+6</td><td class="pts">7</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Japan</td><td>3</td><td>1</td><td>2</td><td>0</td><td>7</td><td>3</td><td class="gd">+4</td><td class="pts">5</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Sweden</td><td>3</td><td>1</td><td>1</td><td>1</td><td>7</td><td>7</td><td class="gd">0</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Tunisia</td><td>3</td><td>0</td><td>0</td><td>3</td><td>2</td><td>12</td><td class="gd">-10</td><td class="pts">0</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group G</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Belgium</td><td>3</td><td>1</td><td>2</td><td>0</td><td>6</td><td>2</td><td class="gd">+4</td><td class="pts">5</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Iran</td><td>3</td><td>1</td><td>2</td><td>0</td><td>4</td><td>3</td><td class="gd">+1</td><td class="pts">5</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Egypt</td><td>3</td><td>1</td><td>1</td><td>1</td><td>5</td><td>4</td><td class="gd">+1</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">New Zealand</td><td>3</td><td>0</td><td>1</td><td>2</td><td>4</td><td>10</td><td class="gd">-6</td><td class="pts">1</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group H</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Spain</td><td>3</td><td>2</td><td>1</td><td>0</td><td>5</td><td>0</td><td class="gd">+5</td><td class="pts">7</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Cape Verde Islands</td><td>3</td><td>0</td><td>3</td><td>0</td><td>2</td><td>2</td><td class="gd">0</td><td class="pts">3</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Uruguay</td><td>3</td><td>0</td><td>2</td><td>1</td><td>3</td><td>4</td><td class="gd">-1</td><td class="pts">2</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Saudi Arabia</td><td>3</td><td>0</td><td>2</td><td>1</td><td>1</td><td>5</td><td class="gd">-4</td><td class="pts">2</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group I</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">France</td><td>2</td><td>2</td><td>0</td><td>0</td><td>6</td><td>1</td><td class="gd">+5</td><td class="pts">6</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Norway</td><td>2</td><td>2</td><td>0</td><td>0</td><td>7</td><td>3</td><td class="gd">+4</td><td class="pts">6</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Senegal</td><td>2</td><td>0</td><td>0</td><td>2</td><td>3</td><td>6</td><td class="gd">-3</td><td class="pts">0</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Iraq</td><td>2</td><td>0</td><td>0</td><td>2</td><td>1</td><td>7</td><td class="gd">-6</td><td class="pts">0</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group J</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Argentina</td><td>2</td><td>2</td><td>0</td><td>0</td><td>5</td><td>0</td><td class="gd">+5</td><td class="pts">6</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Austria</td><td>2</td><td>1</td><td>0</td><td>1</td><td>3</td><td>3</td><td class="gd">0</td><td class="pts">3</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Algeria</td><td>2</td><td>1</td><td>0</td><td>1</td><td>2</td><td>4</td><td class="gd">-2</td><td class="pts">3</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Jordan</td><td>2</td><td>0</td><td>0</td><td>2</td><td>2</td><td>5</td><td class="gd">-3</td><td class="pts">0</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group K</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">Colombia</td><td>2</td><td>2</td><td>0</td><td>0</td><td>4</td><td>1</td><td class="gd">+3</td><td class="pts">6</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Portugal</td><td>2</td><td>1</td><td>1</td><td>0</td><td>6</td><td>1</td><td class="gd">+5</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Congo DR</td><td>2</td><td>0</td><td>1</td><td>1</td><td>1</td><td>2</td><td class="gd">-1</td><td class="pts">1</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Uzbekistan</td><td>2</td><td>0</td><td>0</td><td>2</td><td>1</td><td>8</td><td class="gd">-7</td><td class="pts">0</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="group">
-      <h2>Group L</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th class="team">Team</th>
-            <th title="Played">P</th>
-            <th title="Won">W</th>
-            <th title="Drawn">D</th>
-            <th title="Lost">L</th>
-            <th title="Goals For">GF</th>
-            <th title="Goals Against">GA</th>
-            <th title="Goal Difference">GD</th>
-            <th title="Points">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-<tr class="row qualifier"><td class="rank">1</td><td class="team">England</td><td>3</td><td>2</td><td>1</td><td>0</td><td>6</td><td>2</td><td class="gd">+4</td><td class="pts">7</td></tr>
-<tr class="row qualifier"><td class="rank">2</td><td class="team">Croatia</td><td>3</td><td>2</td><td>0</td><td>1</td><td>5</td><td>5</td><td class="gd">0</td><td class="pts">6</td></tr>
-<tr class="row"><td class="rank">3</td><td class="team">Ghana</td><td>3</td><td>1</td><td>1</td><td>1</td><td>2</td><td>2</td><td class="gd">0</td><td class="pts">4</td></tr>
-<tr class="row"><td class="rank">4</td><td class="team">Panama</td><td>3</td><td>0</td><td>0</td><td>3</td><td>0</td><td>4</td><td class="gd">-4</td><td class="pts">0</td></tr>
-        </tbody>
-      </table>
-    </div>
-    </div>
-  </div>
-
-  <p class="qualifier-note">
-    <span></span>Top 2 teams in each group advance to the Round of 32.
-    Tiebreaker: points &rarr; goal difference &rarr; goals scored &rarr; head-to-head.
-  </p>
-
-  <div class="schedule-section"><p class="section-label">Full schedule</p><div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Sat, Jun 27 &mdash; Today</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">5:00 PM ET</span><span class="sched-grp">GROUP L</span></div><div class="sched-col-home">Panama</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">England</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">5:00 PM ET</span><span class="sched-grp">GROUP L</span></div><div class="sched-col-home">Croatia</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Ghana</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lincoln Financial Field</span><span class="sched-venue-city">Philadelphia, USA</span></div></div>
-<div class="sched-row sched-row-upcoming"><div class="sched-col-time"><span class="sched-time">7:30 PM ET</span><span class="sched-grp">GROUP K</span></div><div class="sched-col-home">Colombia</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Portugal</div><div class="sched-col-venue"><span class="sched-venue-name">Hard Rock Stadium</span><span class="sched-venue-city">Miami, USA</span></div></div>
-<div class="sched-row sched-row-upcoming"><div class="sched-col-time"><span class="sched-time">7:30 PM ET</span><span class="sched-grp">GROUP K</span></div><div class="sched-col-home">Congo DR</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Uzbekistan</div><div class="sched-col-venue"><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div>
-<div class="sched-row sched-row-upcoming"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP J</span></div><div class="sched-col-home">Jordan</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Argentina</div><div class="sched-col-venue"><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row sched-row-upcoming"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP J</span></div><div class="sched-col-home">Algeria</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Austria</div><div class="sched-col-venue"><span class="sched-venue-name">Arrowhead Stadium</span><span class="sched-venue-city">Kansas City, USA</span></div></div></div>
-<div class="sched-ko-header"><span class="sched-ko-line"></span><span class="sched-ko-title">Knockout Stage</span><span class="sched-ko-line"></span></div><div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Sun, Jun 28</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">South Africa</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Canada</div><div class="sched-col-venue"><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Los Angeles, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Mon, Jun 29</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">Brazil</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Japan</div><div class="sched-col-venue"><span class="sched-venue-name">NRG Stadium</span><span class="sched-venue-city">Houston, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:30 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">Germany</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Gillette Stadium</span><span class="sched-venue-city">Foxborough, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">Netherlands</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Morocco</div><div class="sched-col-venue"><span class="sched-venue-name">Estadio BBVA</span><span class="sched-venue-city">Monterrey, Mexico</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Tue, Jun 30</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">5:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">Mexico</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Estadio Azteca</span><span class="sched-venue-city">Mexico City, Mexico</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Wed, Jul 1</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Lumen Field</span><span class="sched-venue-city">Seattle, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">United States</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Bosnia-Herzegovina</div><div class="sched-col-venue"><span class="sched-venue-name">Levi's Stadium</span><span class="sched-venue-city">Santa Clara, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Thu, Jul 2</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Los Angeles, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">7:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">BMO Field</span><span class="sched-venue-city">Toronto, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">11:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">Switzerland</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">BC Place</span><span class="sched-venue-city">Vancouver, Canada</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Fri, Jul 3</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">2:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">Australia</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">Argentina</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Hard Rock Stadium</span><span class="sched-venue-city">Miami, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:30 PM ET</span><span class="sched-grp">Round of 32</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Arrowhead Stadium</span><span class="sched-venue-city">Kansas City, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Sat, Jul 4</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">NRG Stadium</span><span class="sched-venue-city">Houston, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">5:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Lincoln Financial Field</span><span class="sched-venue-city">Philadelphia, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Sun, Jul 5</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Estadio Azteca</span><span class="sched-venue-city">Mexico City, Mexico</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Mon, Jul 6</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Lumen Field</span><span class="sched-venue-city">Seattle, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Tue, Jul 7</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">Round of 16</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">BC Place</span><span class="sched-venue-city">Vancouver, Canada</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Thu, Jul 9</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">Quarterfinal</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Gillette Stadium</span><span class="sched-venue-city">Foxborough, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Fri, Jul 10</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">Quarterfinal</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Los Angeles, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Sat, Jul 11</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">5:00 PM ET</span><span class="sched-grp">Quarterfinal</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Hard Rock Stadium</span><span class="sched-venue-city">Miami, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">Quarterfinal</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Arrowhead Stadium</span><span class="sched-venue-city">Kansas City, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Tue, Jul 14</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">Semifinal</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Wed, Jul 15</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">Semifinal</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Sat, Jul 18</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">5:00 PM ET</span><span class="sched-grp">3rd Place</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name">Hard Rock Stadium</span><span class="sched-venue-city">Miami, USA</span></div></div></div>
-<div class="sched-date-group"><div class="sched-date-header"><span class="sched-date-str">Sun, Jul 19</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">Final</span></div><div class="sched-col-home">TBD</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">TBD</div><div class="sched-col-venue"><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div></div>
-<div class="sched-past-header"><span class="sched-past-line"></span><span class="sched-past-title">Completed match days</span><span class="sched-past-line"></span></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Thu, Jun 11</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP A</span></div><div class="sched-col-home">Mexico</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">South Africa</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio Azteca</span><span class="sched-venue-city">Mexico City, Mexico</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP A</span></div><div class="sched-col-home">South Korea</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Czechia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio Akron</span><span class="sched-venue-city">Guadalajara, Mexico</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Fri, Jun 12</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP B</span></div><div class="sched-col-home">Canada</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Bosnia-Herzegovina</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BMO Field</span><span class="sched-venue-city">Toronto, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP D</span></div><div class="sched-col-home">United States</div><div class="sched-col-score"><span class="sched-score">4</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Paraguay</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Inglewood, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Sat, Jun 13</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP B</span></div><div class="sched-col-home">Qatar</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Switzerland</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Levi's Stadium</span><span class="sched-venue-city">Santa Clara, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP C</span></div><div class="sched-col-home">Brazil</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Morocco</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP C</span></div><div class="sched-col-home">Haiti</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Scotland</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Gillette Stadium</span><span class="sched-venue-city">Foxborough, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Sun, Jun 14</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 AM ET</span><span class="sched-grp">GROUP D</span></div><div class="sched-col-home">Australia</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Turkey</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BC Place</span><span class="sched-venue-city">Vancouver, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">GROUP E</span></div><div class="sched-col-home">Germany</div><div class="sched-col-score"><span class="sched-score">7</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Curaçao</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">NRG Stadium</span><span class="sched-venue-city">Houston, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">GROUP F</span></div><div class="sched-col-home">Netherlands</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Japan</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">7:00 PM ET</span><span class="sched-grp">GROUP E</span></div><div class="sched-col-home">Ivory Coast</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Ecuador</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lincoln Financial Field</span><span class="sched-venue-city">Philadelphia, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP F</span></div><div class="sched-col-home">Sweden</div><div class="sched-col-score"><span class="sched-score">5</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Tunisia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio BBVA</span><span class="sched-venue-city">Monterrey, Mexico</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Mon, Jun 15</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 PM ET</span><span class="sched-grp">GROUP H</span></div><div class="sched-col-home">Spain</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Cape Verde Islands</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP G</span></div><div class="sched-col-home">Belgium</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Egypt</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lumen Field</span><span class="sched-venue-city">Seattle, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP H</span></div><div class="sched-col-home">Saudi Arabia</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Uruguay</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Hard Rock Stadium</span><span class="sched-venue-city">Miami, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP G</span></div><div class="sched-col-home">Iran</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">New Zealand</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Inglewood, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Tue, Jun 16</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP I</span></div><div class="sched-col-home">France</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Senegal</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP I</span></div><div class="sched-col-home">Iraq</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">4</span></div><div class="sched-col-away">Norway</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Gillette Stadium</span><span class="sched-venue-city">Foxborough, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP J</span></div><div class="sched-col-home">Argentina</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Algeria</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Arrowhead Stadium</span><span class="sched-venue-city">Kansas City, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Wed, Jun 17</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 AM ET</span><span class="sched-grp">GROUP J</span></div><div class="sched-col-home">Austria</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Jordan</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Levi's Stadium</span><span class="sched-venue-city">Santa Clara, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">GROUP K</span></div><div class="sched-col-home">Portugal</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Congo DR</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">NRG Stadium</span><span class="sched-venue-city">Houston, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">GROUP L</span></div><div class="sched-col-home">England</div><div class="sched-col-score"><span class="sched-score">4</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Croatia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">7:00 PM ET</span><span class="sched-grp">GROUP L</span></div><div class="sched-col-home">Ghana</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Panama</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BMO Field</span><span class="sched-venue-city">Toronto, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP K</span></div><div class="sched-col-home">Uzbekistan</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">3</span></div><div class="sched-col-away">Colombia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio Azteca</span><span class="sched-venue-city">Mexico City, Mexico</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Thu, Jun 18</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 PM ET</span><span class="sched-grp">GROUP A</span></div><div class="sched-col-home">Czechia</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">South Africa</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP B</span></div><div class="sched-col-home">Switzerland</div><div class="sched-col-score"><span class="sched-score">4</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Bosnia-Herzegovina</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Inglewood, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP B</span></div><div class="sched-col-home">Canada</div><div class="sched-col-score"><span class="sched-score">6</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Qatar</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BC Place</span><span class="sched-venue-city">Vancouver, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP A</span></div><div class="sched-col-home">Mexico</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">South Korea</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio Akron</span><span class="sched-venue-city">Guadalajara, Mexico</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Fri, Jun 19</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP D</span></div><div class="sched-col-home">United States</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Australia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lumen Field</span><span class="sched-venue-city">Seattle, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP C</span></div><div class="sched-col-home">Scotland</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Morocco</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Gillette Stadium</span><span class="sched-venue-city">Foxborough, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:30 PM ET</span><span class="sched-grp">GROUP C</span></div><div class="sched-col-home">Brazil</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Haiti</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lincoln Financial Field</span><span class="sched-venue-city">Philadelphia, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">11:00 PM ET</span><span class="sched-grp">GROUP D</span></div><div class="sched-col-home">Turkey</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Paraguay</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Levi's Stadium</span><span class="sched-venue-city">Santa Clara, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Sat, Jun 20</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">GROUP F</span></div><div class="sched-col-home">Netherlands</div><div class="sched-col-score"><span class="sched-score">5</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Sweden</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">NRG Stadium</span><span class="sched-venue-city">Houston, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">GROUP E</span></div><div class="sched-col-home">Germany</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Ivory Coast</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BMO Field</span><span class="sched-venue-city">Toronto, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:00 PM ET</span><span class="sched-grp">GROUP E</span></div><div class="sched-col-home">Ecuador</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Curaçao</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Arrowhead Stadium</span><span class="sched-venue-city">Kansas City, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Sun, Jun 21</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 AM ET</span><span class="sched-grp">GROUP F</span></div><div class="sched-col-home">Tunisia</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">4</span></div><div class="sched-col-away">Japan</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio BBVA</span><span class="sched-venue-city">Monterrey, Mexico</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">12:00 PM ET</span><span class="sched-grp">GROUP H</span></div><div class="sched-col-home">Spain</div><div class="sched-col-score"><span class="sched-score">4</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Saudi Arabia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP G</span></div><div class="sched-col-home">Belgium</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Iran</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Inglewood, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP H</span></div><div class="sched-col-home">Uruguay</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Cape Verde Islands</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Hard Rock Stadium</span><span class="sched-venue-city">Miami, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP G</span></div><div class="sched-col-home">New Zealand</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">3</span></div><div class="sched-col-away">Egypt</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BC Place</span><span class="sched-venue-city">Vancouver, Canada</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Mon, Jun 22</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">GROUP J</span></div><div class="sched-col-home">Argentina</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Austria</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">5:00 PM ET</span><span class="sched-grp">GROUP I</span></div><div class="sched-col-home">France</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Iraq</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lincoln Financial Field</span><span class="sched-venue-city">Philadelphia, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:00 PM ET</span><span class="sched-grp">GROUP I</span></div><div class="sched-col-home">Norway</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Senegal</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">11:00 PM ET</span><span class="sched-grp">GROUP J</span></div><div class="sched-col-home">Jordan</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Algeria</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Levi's Stadium</span><span class="sched-venue-city">Santa Clara, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Tue, Jun 23</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">1:00 PM ET</span><span class="sched-grp">GROUP K</span></div><div class="sched-col-home">Portugal</div><div class="sched-col-score"><span class="sched-score">5</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Uzbekistan</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">NRG Stadium</span><span class="sched-venue-city">Houston, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">GROUP L</span></div><div class="sched-col-home">England</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Ghana</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Gillette Stadium</span><span class="sched-venue-city">Foxborough, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">7:00 PM ET</span><span class="sched-grp">GROUP L</span></div><div class="sched-col-home">Panama</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Croatia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BMO Field</span><span class="sched-venue-city">Toronto, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP K</span></div><div class="sched-col-home">Colombia</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Congo DR</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio Akron</span><span class="sched-venue-city">Guadalajara, Mexico</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Wed, Jun 24</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP B</span></div><div class="sched-col-home">Switzerland</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Canada</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BC Place</span><span class="sched-venue-city">Vancouver, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP B</span></div><div class="sched-col-home">Bosnia-Herzegovina</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Qatar</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lumen Field</span><span class="sched-venue-city">Seattle, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP C</span></div><div class="sched-col-home">Morocco</div><div class="sched-col-score"><span class="sched-score">4</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Haiti</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Mercedes-Benz Stadium</span><span class="sched-venue-city">Atlanta, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">6:00 PM ET</span><span class="sched-grp">GROUP C</span></div><div class="sched-col-home">Scotland</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">3</span></div><div class="sched-col-away">Brazil</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Hard Rock Stadium</span><span class="sched-venue-city">Miami, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP A</span></div><div class="sched-col-home">Czechia</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">3</span></div><div class="sched-col-away">Mexico</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio Azteca</span><span class="sched-venue-city">Mexico City, Mexico</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">9:00 PM ET</span><span class="sched-grp">GROUP A</span></div><div class="sched-col-home">South Africa</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">South Korea</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio BBVA</span><span class="sched-venue-city">Monterrey, Mexico</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Thu, Jun 25</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">GROUP E</span></div><div class="sched-col-home">Ecuador</div><div class="sched-col-score"><span class="sched-score">2</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Germany</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name venue-metlife">MetLife Stadium</span><span class="sched-venue-city">East Rutherford, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">4:00 PM ET</span><span class="sched-grp">GROUP E</span></div><div class="sched-col-home">Curaçao</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Ivory Coast</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lincoln Financial Field</span><span class="sched-venue-city">Philadelphia, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">7:00 PM ET</span><span class="sched-grp">GROUP F</span></div><div class="sched-col-home">Tunisia</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">3</span></div><div class="sched-col-away">Netherlands</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Arrowhead Stadium</span><span class="sched-venue-city">Kansas City, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">7:00 PM ET</span><span class="sched-grp">GROUP F</span></div><div class="sched-col-home">Japan</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Sweden</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">AT&T Stadium</span><span class="sched-venue-city">Arlington, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP D</span></div><div class="sched-col-home">Turkey</div><div class="sched-col-score"><span class="sched-score">3</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">United States</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">SoFi Stadium</span><span class="sched-venue-city">Inglewood, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">10:00 PM ET</span><span class="sched-grp">GROUP D</span></div><div class="sched-col-home">Paraguay</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Australia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Levi's Stadium</span><span class="sched-venue-city">Santa Clara, USA</span></div></div></div>
-<div class="sched-date-group sched-date-group-past"><div class="sched-date-header"><span class="sched-date-str">Fri, Jun 26</span><span class="sched-date-line"></span></div><div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP I</span></div><div class="sched-col-home">Norway</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">France</div><div class="sched-col-venue"><span class="sched-venue-name">Gillette Stadium</span><span class="sched-venue-city">Foxborough, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">3:00 PM ET</span><span class="sched-grp">GROUP I</span></div><div class="sched-col-home">Senegal</div><div class="sched-col-score"><span class="sched-vs">vs</span></div><div class="sched-col-away">Iraq</div><div class="sched-col-venue"><span class="sched-venue-name">BMO Field</span><span class="sched-venue-city">Toronto, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:00 PM ET</span><span class="sched-grp">GROUP H</span></div><div class="sched-col-home">Uruguay</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">1</span></div><div class="sched-col-away">Spain</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Estadio Akron</span><span class="sched-venue-city">Guadalajara, Mexico</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">8:00 PM ET</span><span class="sched-grp">GROUP H</span></div><div class="sched-col-home">Cape Verde Islands</div><div class="sched-col-score"><span class="sched-score">0</span><span class="sched-sep">&ndash;</span><span class="sched-score">0</span></div><div class="sched-col-away">Saudi Arabia</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">NRG Stadium</span><span class="sched-venue-city">Houston, USA</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">11:00 PM ET</span><span class="sched-grp">GROUP G</span></div><div class="sched-col-home">New Zealand</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">5</span></div><div class="sched-col-away">Belgium</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">BC Place</span><span class="sched-venue-city">Vancouver, Canada</span></div></div>
-<div class="sched-row"><div class="sched-col-time"><span class="sched-time">11:00 PM ET</span><span class="sched-grp">GROUP G</span></div><div class="sched-col-home">Egypt</div><div class="sched-col-score"><span class="sched-score">1</span><span class="sched-sep">&ndash;</span><span class="sched-score">2</span></div><div class="sched-col-away">Iran</div><div class="sched-col-venue"><span class="sched-status-ft">FT</span><span class="sched-venue-name">Lumen Field</span><span class="sched-venue-city">Seattle, USA</span></div></div></div></div>
-
-  <footer>
-    Data via <a href="https://www.football-data.org" style="color:#4a5270">football-data.org</a>
-    &nbsp;&middot;&nbsp; Auto-updated via GitHub Actions
-  </footer>
-
+</div>
+<div class="bracket-wrap">
+<svg width="1262" height="975"
+     viewBox="0 0 1262 975"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif">
+<text x="62"   y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
+<text x="202"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="342"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="482"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="631"  y="17" font-size="8" font-weight="600" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
+<text x="780"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="920"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="1060" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="1200" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
+<g stroke="#2a3d5c" stroke-width="1.25" fill="none">
+  <path d="M122,83 H132 V189 M122,189 H132 M132,136 H142"/>
+  <path d="M122,295 H132 V401 M122,401 H132 M132,348 H142"/>
+  <path d="M122,507 H132 V613 M122,613 H132 M132,560 H142"/>
+  <path d="M122,719 H132 V825 M122,825 H132 M132,772 H142"/>
+  <path d="M262,136 H272 V348 M262,348 H272 M272,242 H282"/>
+  <path d="M262,560 H272 V772 M262,772 H272 M272,666 H282"/>
+  <path d="M402,242 H412 V666 M402,666 H412 M412,454 H422"/>
+  <line x1="542" y1="454" x2="562" y2="454"/>
+  <line x1="700" y1="454" x2="720" y2="454"/>
+  <path d="M860,242 H850 V666 M860,666 H850 M850,454 H840"/>
+  <path d="M1000,136 H990 V348 M1000,348 H990 M990,242 H980"/>
+  <path d="M1000,560 H990 V772 M1000,772 H990 M990,666 H980"/>
+  <path d="M1140,83 H1130 V189 M1140,189 H1130 M1130,136 H1120"/>
+  <path d="M1140,295 H1130 V401 M1140,401 H1130 M1130,348 H1120"/>
+  <path d="M1140,507 H1130 V613 M1140,613 H1130 M1130,560 H1120"/>
+  <path d="M1140,719 H1130 V825 M1140,825 H1130 M1130,772 H1120"/>
+  <line x1="482" y1="480" x2="482" y2="892" stroke-dasharray="5,3.5"/>
+  <line x1="780" y1="480" x2="780" y2="892" stroke-dasharray="5,3.5"/>
+  <line x1="482" y1="892" x2="562" y2="892"/>
+  <line x1="780" y1="892" x2="700" y2="892"/>
+</g>
+<text x="631" y="878" font-size="8" font-weight="600" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>
+<rect x="2" y="57" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="10" y="74" font-size="12" fill="#e8eaf0" >South Africa</text>
+<text x="10" y="88" font-size="12" fill="#e8eaf0" >Canada</text>
+<text x="10" y="102" font-size="9" fill="#7a8099" >Jun 28 · 3:00 PM ET</text>
+<rect x="2" y="163" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="10" y="180" font-size="12" fill="#e8eaf0" >Brazil</text>
+<text x="10" y="194" font-size="12" fill="#e8eaf0" >Japan</text>
+<text x="10" y="208" font-size="9" fill="#7a8099" >Jun 29 · 1:00 PM ET</text>
+<rect x="2" y="269" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="10" y="286" font-size="12" fill="#e8eaf0" >Germany</text>
+<text x="10" y="300" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="10" y="314" font-size="9" fill="#7a8099" >Jun 29 · 4:30 PM ET</text>
+<rect x="2" y="375" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="10" y="392" font-size="12" fill="#e8eaf0" >Netherlands</text>
+<text x="10" y="406" font-size="12" fill="#e8eaf0" >Morocco</text>
+<text x="10" y="420" font-size="9" fill="#7a8099" >Jun 29 · 9:00 PM ET</text>
+<rect x="2" y="481" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="10" y="498" font-size="12" fill="#e8eaf0" >Ivory Coast</text>
+<text x="10" y="512" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="10" y="526" font-size="9" fill="#7a8099" >Jun 30 · 1:00 PM ET</text>
+<rect x="2" y="587" width="120" height="52" rx="4" fill="#131929" stroke="rgba(245,166,35,0.55)" stroke-width="1"/>
+<text x="10" y="604" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="10" y="618" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="10" y="632" font-size="9" fill="#f5a623" font-weight="600">★ Jun 30 · 5:00 PM ET</text>
+<rect x="2" y="693" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="10" y="710" font-size="12" fill="#e8eaf0" >Mexico</text>
+<text x="10" y="724" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="10" y="738" font-size="9" fill="#7a8099" >Jun 30 · 9:00 PM ET</text>
+<rect x="2" y="799" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="10" y="816" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="10" y="830" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="10" y="844" font-size="9" fill="#7a8099" >Jul 1 · 12:00 PM ET</text>
+<rect x="142" y="110" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="202" y="132" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="202" y="150" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 4 · 1:00 PM ET</text>
+<rect x="142" y="322" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="202" y="344" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="202" y="362" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 4 · 5:00 PM ET</text>
+<rect x="142" y="534" width="120" height="52" rx="4" fill="#131929" stroke="rgba(245,166,35,0.55)" stroke-width="1"/>
+<text x="202" y="556" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="202" y="574" font-size="9"  fill="#f5a623" font-weight="600" text-anchor="middle">★ Jul 5 · 4:00 PM ET</text>
+<rect x="142" y="746" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="202" y="768" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="202" y="786" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 5 · 8:00 PM ET</text>
+<rect x="282" y="216" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="342" y="238" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="342" y="256" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 9 · 4:00 PM ET</text>
+<rect x="282" y="640" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="342" y="662" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="342" y="680" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 10 · 3:00 PM ET</text>
+<rect x="422" y="428" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="482" y="450" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="482" y="468" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 14 · 3:00 PM ET</text>
+<rect x="562" y="423" width="138" height="64" rx="4" fill="#131929" stroke="#f5a623" stroke-width="1.5"/>
+<text x="631" y="441" font-size="11" fill="#6b7280" font-style="italic" text-anchor="middle">TBD</text>
+<text x="631" y="455" font-size="8"  fill="#7a8099" text-anchor="middle">vs</text>
+<text x="631" y="469" font-size="11" fill="#6b7280" font-style="italic" text-anchor="middle">TBD</text>
+<text x="631" y="483" font-size="8.5" fill="#f5a623" font-weight="600" text-anchor="middle">★ MetLife Stadium</text>
+<rect x="720" y="428" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="780" y="450" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="780" y="468" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 15 · 3:00 PM ET</text>
+<rect x="860" y="216" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="920" y="238" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="920" y="256" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 11 · 5:00 PM ET</text>
+<rect x="860" y="640" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="920" y="662" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="920" y="680" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 11 · 9:00 PM ET</text>
+<rect x="1000" y="110" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1060" y="132" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1060" y="150" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 6 · 3:00 PM ET</text>
+<rect x="1000" y="322" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1060" y="344" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1060" y="362" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 6 · 8:00 PM ET</text>
+<rect x="1000" y="534" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1060" y="556" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1060" y="574" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 7 · 12:00 PM ET</text>
+<rect x="1000" y="746" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1060" y="768" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1060" y="786" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 7 · 4:00 PM ET</text>
+<rect x="1140" y="57" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="74" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="88" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="102" font-size="9" fill="#7a8099" >Jul 1 · 4:00 PM ET</text>
+<rect x="1140" y="163" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="180" font-size="12" fill="#e8eaf0" >United States</text>
+<text x="1148" y="194" font-size="12" fill="#e8eaf0" >Bosnia-Herzegovina</text>
+<text x="1148" y="208" font-size="9" fill="#7a8099" >Jul 1 · 8:00 PM ET</text>
+<rect x="1140" y="269" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="286" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="300" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="314" font-size="9" fill="#7a8099" >Jul 2 · 3:00 PM ET</text>
+<rect x="1140" y="375" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="392" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="406" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="420" font-size="9" fill="#7a8099" >Jul 2 · 7:00 PM ET</text>
+<rect x="1140" y="481" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="498" font-size="12" fill="#e8eaf0" >Switzerland</text>
+<text x="1148" y="512" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="526" font-size="9" fill="#7a8099" >Jul 2 · 11:00 PM ET</text>
+<rect x="1140" y="587" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="604" font-size="12" fill="#e8eaf0" >Australia</text>
+<text x="1148" y="618" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="632" font-size="9" fill="#7a8099" >Jul 3 · 2:00 PM ET</text>
+<rect x="1140" y="693" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="710" font-size="12" fill="#e8eaf0" >Argentina</text>
+<text x="1148" y="724" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="738" font-size="9" fill="#7a8099" >Jul 3 · 6:00 PM ET</text>
+<rect x="1140" y="799" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1148" y="816" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="830" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1148" y="844" font-size="9" fill="#7a8099" >Jul 3 · 9:30 PM ET</text>
+<rect x="562" y="894" width="138" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="631" y="916" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>
+<text x="631" y="934" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 18 · 5:00 PM ET</text>
+</svg>
+</div>
+<p class="footer-note">
+  Bracket connections between rounds are based on the official FIFA schedule.
+  Teams, scores, and results update automatically with each refresh.
+  &nbsp;·&nbsp; Subscribe to the full calendar (group + knockout):
+  <a href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics"
+     style="color:#60a5fa">calendar feed</a>
+</p>
 </body>
 </html>
