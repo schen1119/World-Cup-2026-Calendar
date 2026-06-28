@@ -6,7 +6,7 @@
   <title>FIFA World Cup 2026 — Knockout Stage Bracket</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -14,21 +14,27 @@
       color: #e8eaf0;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       min-height: 100vh;
-      padding: 2rem 1.5rem 3rem;
+      padding: 2rem 1rem 3rem;
     }
-    .page-header { text-align: center; margin-bottom: 2rem; }
-    .page-header h1 { font-size: 1.6rem; font-weight: 600; color: #fff; letter-spacing: .02em; }
+    .page-header { text-align: center; margin-bottom: 1.75rem; }
+    .page-header h1 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .02em;
+    }
     .page-header h1 span { color: #f5a623; }
-    .page-header p { margin-top: .4rem; font-size: .8rem; color: #7a8099; }
+    .page-header p { margin-top: .4rem; font-size: .85rem; color: #7a8099; }
     .legend {
-      display: flex; gap: 1.25rem; justify-content: center;
-      flex-wrap: wrap; margin-top: .9rem; font-size: .75rem; color: #7a8099;
+      display: flex; gap: 1.5rem; justify-content: center;
+      flex-wrap: wrap; margin-top: 1rem; font-size: .8rem; color: #7a8099;
     }
-    .legend span { display: flex; align-items: center; gap: 5px; }
-    .bracket-wrap { overflow-x: auto; padding: .5rem 0 1rem; }
+    .legend span { display: flex; align-items: center; gap: 6px; }
+    .bracket-wrap { width: 100%; padding: .5rem 0 1rem; }
+    .bracket-wrap svg { display: block; width: 100%; height: auto; }
     .footer-note {
       text-align: center; margin-top: 1.5rem;
-      font-size: .72rem; color: #4a5270;
+      font-size: .75rem; color: #4a5270;
       max-width: 700px; margin-left: auto; margin-right: auto;
     }
   </style>
@@ -36,165 +42,164 @@
 <body>
 <div class="page-header">
   <h1>FIFA World Cup 2026 — <span>Knockout Stage</span></h1>
-  <p>Last updated: 6/28/2026 at 1:30 AM EDT with latest available data from football-data.org</p>
+  <p>Last updated: 6/28/2026 at 1:39 AM EDT with latest available data from football-data.org</p>
   <div class="legend">
-    <span><span style="color:#e8eaf0;font-weight:600">●</span> Confirmed / result</span>
+    <span><span style="color:#e8eaf0;font-weight:700">●</span> Confirmed / result</span>
     <span><span style="color:#7a8099">●</span> Eliminated / loser</span>
     <span><span style="color:#6b7280;font-style:italic">●</span> TBD</span>
     <span><span style="color:#f5a623">★</span> MetLife Stadium</span>
   </div>
 </div>
 <div class="bracket-wrap">
-<svg width="1262" height="975"
-     viewBox="0 0 1262 975"
+<svg viewBox="0 0 1476 1150"
      xmlns="http://www.w3.org/2000/svg"
      font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif">
-<text x="62"   y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
-<text x="202"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
-<text x="342"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
-<text x="482"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
-<text x="631"  y="17" font-size="8" font-weight="600" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
-<text x="780"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
-<text x="920"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
-<text x="1060" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
-<text x="1200" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
-<g stroke="#2a3d5c" stroke-width="1.25" fill="none">
-  <path d="M122,83 H132 V189 M122,189 H132 M132,136 H142"/>
-  <path d="M122,295 H132 V401 M122,401 H132 M132,348 H142"/>
-  <path d="M122,507 H132 V613 M122,613 H132 M132,560 H142"/>
-  <path d="M122,719 H132 V825 M122,825 H132 M132,772 H142"/>
-  <path d="M262,136 H272 V348 M262,348 H272 M272,242 H282"/>
-  <path d="M262,560 H272 V772 M262,772 H272 M272,666 H282"/>
-  <path d="M402,242 H412 V666 M402,666 H412 M412,454 H422"/>
-  <line x1="542" y1="454" x2="562" y2="454"/>
-  <line x1="700" y1="454" x2="720" y2="454"/>
-  <path d="M860,242 H850 V666 M860,666 H850 M850,454 H840"/>
-  <path d="M1000,136 H990 V348 M1000,348 H990 M990,242 H980"/>
-  <path d="M1000,560 H990 V772 M1000,772 H990 M990,666 H980"/>
-  <path d="M1140,83 H1130 V189 M1140,189 H1130 M1130,136 H1120"/>
-  <path d="M1140,295 H1130 V401 M1140,401 H1130 M1130,348 H1120"/>
-  <path d="M1140,507 H1130 V613 M1140,613 H1130 M1130,560 H1120"/>
-  <path d="M1140,719 H1130 V825 M1140,825 H1130 M1130,772 H1120"/>
-  <line x1="482" y1="480" x2="482" y2="892" stroke-dasharray="5,3.5"/>
-  <line x1="780" y1="480" x2="780" y2="892" stroke-dasharray="5,3.5"/>
-  <line x1="482" y1="892" x2="562" y2="892"/>
-  <line x1="780" y1="892" x2="700" y2="892"/>
+<text x="72"   y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
+<text x="236"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="400"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="564"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="738"  y="22" font-size="11" font-weight="700" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
+<text x="912"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="1076" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="1240" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="1404" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
+<g stroke="#2a3d5c" stroke-width="1.75" fill="none">
+  <path d="M142,98 H154 V222 M142,222 H154 M154,160 H166"/>
+  <path d="M142,346 H154 V470 M142,470 H154 M154,408 H166"/>
+  <path d="M142,594 H154 V718 M142,718 H154 M154,656 H166"/>
+  <path d="M142,842 H154 V966 M142,966 H154 M154,904 H166"/>
+  <path d="M306,160 H318 V408 M306,408 H318 M318,284 H330"/>
+  <path d="M306,656 H318 V904 M306,904 H318 M318,780 H330"/>
+  <path d="M470,284 H482 V780 M470,780 H482 M482,532 H494"/>
+  <line x1="634" y1="532" x2="658" y2="532"/>
+  <line x1="818" y1="532" x2="842" y2="532"/>
+  <path d="M1006,284 H994 V780 M1006,780 H994 M994,532 H982"/>
+  <path d="M1170,160 H1158 V408 M1170,408 H1158 M1158,284 H1146"/>
+  <path d="M1170,656 H1158 V904 M1170,904 H1158 M1158,780 H1146"/>
+  <path d="M1334,98 H1322 V222 M1334,222 H1322 M1322,160 H1310"/>
+  <path d="M1334,346 H1322 V470 M1334,470 H1322 M1322,408 H1310"/>
+  <path d="M1334,594 H1322 V718 M1334,718 H1322 M1322,656 H1310"/>
+  <path d="M1334,842 H1322 V966 M1334,966 H1322 M1322,904 H1310"/>
+  <line x1="564" y1="563" x2="564" y2="1058" stroke-dasharray="6,4"/>
+  <line x1="912" y1="563" x2="912" y2="1058" stroke-dasharray="6,4"/>
+  <line x1="564" y1="1058" x2="658" y2="1058"/>
+  <line x1="912" y1="1058" x2="818" y2="1058"/>
 </g>
-<text x="631" y="878" font-size="8" font-weight="600" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>
-<rect x="2" y="57" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="10" y="74" font-size="12" fill="#e8eaf0" >South Africa</text>
-<text x="10" y="88" font-size="12" fill="#e8eaf0" >Canada</text>
-<text x="10" y="102" font-size="9" fill="#7a8099" >Jun 28 · 3:00 PM ET</text>
-<rect x="2" y="163" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="10" y="180" font-size="12" fill="#e8eaf0" >Brazil</text>
-<text x="10" y="194" font-size="12" fill="#e8eaf0" >Japan</text>
-<text x="10" y="208" font-size="9" fill="#7a8099" >Jun 29 · 1:00 PM ET</text>
-<rect x="2" y="269" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="10" y="286" font-size="12" fill="#e8eaf0" >Germany</text>
-<text x="10" y="300" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="10" y="314" font-size="9" fill="#7a8099" >Jun 29 · 4:30 PM ET</text>
-<rect x="2" y="375" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="10" y="392" font-size="12" fill="#e8eaf0" >Netherlands</text>
-<text x="10" y="406" font-size="12" fill="#e8eaf0" >Morocco</text>
-<text x="10" y="420" font-size="9" fill="#7a8099" >Jun 29 · 9:00 PM ET</text>
-<rect x="2" y="481" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="10" y="498" font-size="12" fill="#e8eaf0" >Ivory Coast</text>
-<text x="10" y="512" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="10" y="526" font-size="9" fill="#7a8099" >Jun 30 · 1:00 PM ET</text>
-<rect x="2" y="587" width="120" height="52" rx="4" fill="#131929" stroke="rgba(245,166,35,0.55)" stroke-width="1"/>
-<text x="10" y="604" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="10" y="618" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="10" y="632" font-size="9" fill="#f5a623" font-weight="600">★ Jun 30 · 5:00 PM ET</text>
-<rect x="2" y="693" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="10" y="710" font-size="12" fill="#e8eaf0" >Mexico</text>
-<text x="10" y="724" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="10" y="738" font-size="9" fill="#7a8099" >Jun 30 · 9:00 PM ET</text>
-<rect x="2" y="799" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="10" y="816" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="10" y="830" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="10" y="844" font-size="9" fill="#7a8099" >Jul 1 · 12:00 PM ET</text>
-<rect x="142" y="110" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="202" y="132" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="202" y="150" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 4 · 1:00 PM ET</text>
-<rect x="142" y="322" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="202" y="344" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="202" y="362" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 4 · 5:00 PM ET</text>
-<rect x="142" y="534" width="120" height="52" rx="4" fill="#131929" stroke="rgba(245,166,35,0.55)" stroke-width="1"/>
-<text x="202" y="556" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="202" y="574" font-size="9"  fill="#f5a623" font-weight="600" text-anchor="middle">★ Jul 5 · 4:00 PM ET</text>
-<rect x="142" y="746" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="202" y="768" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="202" y="786" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 5 · 8:00 PM ET</text>
-<rect x="282" y="216" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="342" y="238" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="342" y="256" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 9 · 4:00 PM ET</text>
-<rect x="282" y="640" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="342" y="662" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="342" y="680" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 10 · 3:00 PM ET</text>
-<rect x="422" y="428" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="482" y="450" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="482" y="468" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 14 · 3:00 PM ET</text>
-<rect x="562" y="423" width="138" height="64" rx="4" fill="#131929" stroke="#f5a623" stroke-width="1.5"/>
-<text x="631" y="441" font-size="11" fill="#6b7280" font-style="italic" text-anchor="middle">TBD</text>
-<text x="631" y="455" font-size="8"  fill="#7a8099" text-anchor="middle">vs</text>
-<text x="631" y="469" font-size="11" fill="#6b7280" font-style="italic" text-anchor="middle">TBD</text>
-<text x="631" y="483" font-size="8.5" fill="#f5a623" font-weight="600" text-anchor="middle">★ MetLife Stadium</text>
-<rect x="720" y="428" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="780" y="450" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="780" y="468" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 15 · 3:00 PM ET</text>
-<rect x="860" y="216" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="920" y="238" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="920" y="256" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 11 · 5:00 PM ET</text>
-<rect x="860" y="640" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="920" y="662" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="920" y="680" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 11 · 9:00 PM ET</text>
-<rect x="1000" y="110" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1060" y="132" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="1060" y="150" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 6 · 3:00 PM ET</text>
-<rect x="1000" y="322" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1060" y="344" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="1060" y="362" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 6 · 8:00 PM ET</text>
-<rect x="1000" y="534" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1060" y="556" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="1060" y="574" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 7 · 12:00 PM ET</text>
-<rect x="1000" y="746" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1060" y="768" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
-<text x="1060" y="786" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 7 · 4:00 PM ET</text>
-<rect x="1140" y="57" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="74" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="88" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="102" font-size="9" fill="#7a8099" >Jul 1 · 4:00 PM ET</text>
-<rect x="1140" y="163" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="180" font-size="12" fill="#e8eaf0" >United States</text>
-<text x="1148" y="194" font-size="12" fill="#e8eaf0" >Bosnia-Herzegovina</text>
-<text x="1148" y="208" font-size="9" fill="#7a8099" >Jul 1 · 8:00 PM ET</text>
-<rect x="1140" y="269" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="286" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="300" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="314" font-size="9" fill="#7a8099" >Jul 2 · 3:00 PM ET</text>
-<rect x="1140" y="375" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="392" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="406" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="420" font-size="9" fill="#7a8099" >Jul 2 · 7:00 PM ET</text>
-<rect x="1140" y="481" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="498" font-size="12" fill="#e8eaf0" >Switzerland</text>
-<text x="1148" y="512" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="526" font-size="9" fill="#7a8099" >Jul 2 · 11:00 PM ET</text>
-<rect x="1140" y="587" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="604" font-size="12" fill="#e8eaf0" >Australia</text>
-<text x="1148" y="618" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="632" font-size="9" fill="#7a8099" >Jul 3 · 2:00 PM ET</text>
-<rect x="1140" y="693" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="710" font-size="12" fill="#e8eaf0" >Argentina</text>
-<text x="1148" y="724" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="738" font-size="9" fill="#7a8099" >Jul 3 · 6:00 PM ET</text>
-<rect x="1140" y="799" width="120" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="1148" y="816" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="830" font-size="12" fill="#6b7280" font-style="italic">TBD</text>
-<text x="1148" y="844" font-size="9" fill="#7a8099" >Jul 3 · 9:30 PM ET</text>
-<rect x="562" y="894" width="138" height="52" rx="4" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
-<text x="631" y="916" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>
-<text x="631" y="934" font-size="9"  fill="#7a8099"  text-anchor="middle">Jul 18 · 5:00 PM ET</text>
+<text x="738" y="1044" font-size="10" font-weight="700" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>
+<rect x="2" y="67" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="12" y="88" font-size="14" fill="#e8eaf0" >South Africa</text>
+<text x="12" y="107" font-size="14" fill="#e8eaf0" >Canada</text>
+<text x="12" y="123" font-size="10.5" fill="#7a8099" >Jun 28 · 3:00 PM ET</text>
+<rect x="2" y="191" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="12" y="212" font-size="14" fill="#e8eaf0" >Brazil</text>
+<text x="12" y="231" font-size="14" fill="#e8eaf0" >Japan</text>
+<text x="12" y="247" font-size="10.5" fill="#7a8099" >Jun 29 · 1:00 PM ET</text>
+<rect x="2" y="315" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="12" y="336" font-size="14" fill="#e8eaf0" >Germany</text>
+<text x="12" y="355" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="12" y="371" font-size="10.5" fill="#7a8099" >Jun 29 · 4:30 PM ET</text>
+<rect x="2" y="439" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="12" y="460" font-size="14" fill="#e8eaf0" >Netherlands</text>
+<text x="12" y="479" font-size="14" fill="#e8eaf0" >Morocco</text>
+<text x="12" y="495" font-size="10.5" fill="#7a8099" >Jun 29 · 9:00 PM ET</text>
+<rect x="2" y="563" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="12" y="584" font-size="14" fill="#e8eaf0" >Ivory Coast</text>
+<text x="12" y="603" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="12" y="619" font-size="10.5" fill="#7a8099" >Jun 30 · 1:00 PM ET</text>
+<rect x="2" y="687" width="140" height="62" rx="5" fill="#131929" stroke="rgba(245,166,35,0.55)" stroke-width="1"/>
+<text x="12" y="708" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="12" y="727" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="12" y="743" font-size="10.5" fill="#f5a623" font-weight="600">★ Jun 30 · 5:00 PM ET</text>
+<rect x="2" y="811" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="12" y="832" font-size="14" fill="#e8eaf0" >Mexico</text>
+<text x="12" y="851" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="12" y="867" font-size="10.5" fill="#7a8099" >Jun 30 · 9:00 PM ET</text>
+<rect x="2" y="935" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="12" y="956" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="12" y="975" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="12" y="991" font-size="10.5" fill="#7a8099" >Jul 1 · 12:00 PM ET</text>
+<rect x="166" y="129" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="236" y="157" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="236" y="177" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 4 · 1:00 PM ET</text>
+<rect x="166" y="377" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="236" y="405" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="236" y="425" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 4 · 5:00 PM ET</text>
+<rect x="166" y="625" width="140" height="62" rx="5" fill="#131929" stroke="rgba(245,166,35,0.55)" stroke-width="1"/>
+<text x="236" y="653" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="236" y="673" font-size="10" fill="#f5a623" font-weight="600" text-anchor="middle">★ Jul 5 · 4:00 PM ET</text>
+<rect x="166" y="873" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="236" y="901" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="236" y="921" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 5 · 8:00 PM ET</text>
+<rect x="330" y="253" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="400" y="281" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="400" y="301" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 9 · 4:00 PM ET</text>
+<rect x="330" y="749" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="400" y="777" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="400" y="797" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 10 · 3:00 PM ET</text>
+<rect x="494" y="501" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="564" y="529" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="564" y="549" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 14 · 3:00 PM ET</text>
+<rect x="658" y="492" width="160" height="80" rx="5" fill="#131929" stroke="#f5a623" stroke-width="1.5"/>
+<text x="738" y="516" font-size="13" fill="#6b7280" font-style="italic" text-anchor="middle">TBD</text>
+<text x="738" y="534" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>
+<text x="738" y="552" font-size="13" fill="#6b7280" font-style="italic" text-anchor="middle">TBD</text>
+<text x="738" y="566" font-size="10" fill="#f5a623" font-weight="600" text-anchor="middle">★ MetLife Stadium</text>
+<rect x="842" y="501" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="912" y="529" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="912" y="549" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 15 · 3:00 PM ET</text>
+<rect x="1006" y="253" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1076" y="281" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1076" y="301" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 11 · 5:00 PM ET</text>
+<rect x="1006" y="749" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1076" y="777" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1076" y="797" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 11 · 9:00 PM ET</text>
+<rect x="1170" y="129" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1240" y="157" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1240" y="177" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 6 · 3:00 PM ET</text>
+<rect x="1170" y="377" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1240" y="405" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1240" y="425" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 6 · 8:00 PM ET</text>
+<rect x="1170" y="625" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1240" y="653" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1240" y="673" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 7 · 12:00 PM ET</text>
+<rect x="1170" y="873" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1240" y="901" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>
+<text x="1240" y="921" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 7 · 4:00 PM ET</text>
+<rect x="1334" y="67" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="88" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="107" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="123" font-size="10.5" fill="#7a8099" >Jul 1 · 4:00 PM ET</text>
+<rect x="1334" y="191" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="212" font-size="14" fill="#e8eaf0" >United States</text>
+<text x="1344" y="231" font-size="14" fill="#e8eaf0" >Bosnia-Herzegovina</text>
+<text x="1344" y="247" font-size="10.5" fill="#7a8099" >Jul 1 · 8:00 PM ET</text>
+<rect x="1334" y="315" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="336" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="355" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="371" font-size="10.5" fill="#7a8099" >Jul 2 · 3:00 PM ET</text>
+<rect x="1334" y="439" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="460" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="479" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="495" font-size="10.5" fill="#7a8099" >Jul 2 · 7:00 PM ET</text>
+<rect x="1334" y="563" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="584" font-size="14" fill="#e8eaf0" >Switzerland</text>
+<text x="1344" y="603" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="619" font-size="10.5" fill="#7a8099" >Jul 2 · 11:00 PM ET</text>
+<rect x="1334" y="687" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="708" font-size="14" fill="#e8eaf0" >Australia</text>
+<text x="1344" y="727" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="743" font-size="10.5" fill="#7a8099" >Jul 3 · 2:00 PM ET</text>
+<rect x="1334" y="811" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="832" font-size="14" fill="#e8eaf0" >Argentina</text>
+<text x="1344" y="851" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="867" font-size="10.5" fill="#7a8099" >Jul 3 · 6:00 PM ET</text>
+<rect x="1334" y="935" width="140" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="1344" y="956" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="975" font-size="14" fill="#6b7280" font-style="italic">TBD</text>
+<text x="1344" y="991" font-size="10.5" fill="#7a8099" >Jul 3 · 9:30 PM ET</text>
+<rect x="658" y="1060" width="160" height="62" rx="5" fill="#131929" stroke="#1e2740" stroke-width=".75"/>
+<text x="738" y="1088" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>
+<text x="738" y="1108" font-size="10" fill="#7a8099"  text-anchor="middle">Jul 18 · 5:00 PM ET</text>
 </svg>
 </div>
 <p class="footer-note">
