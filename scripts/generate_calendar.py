@@ -389,92 +389,92 @@ STAGE_LABELS = {
 }
 
 # ── Bracket slot layout ────────────────────────────────────────────────────────
-# Each entry: (utc_key, x, y, w, h, layout)
-#   layout 'left'   → text left-aligned (R32 boxes, both sides)
-#   layout 'center' → TBD-centred; switches to left-aligned when teams known
-#   layout 'final'  → special Final box (taller, two team rows + vs)
-#   layout 'third'  → 3rd-place box
+# Box: W=140, H=62  Slot height: 124  Gap between rounds: 24
+# Column x positions:
+#   Left  R32=2   R16=166  QF=330  SF=494  Final=658(w=160,h=80)
+#   Right SF=842  QF=1006  R16=1170  R32=1334
+# SVG viewBox: 1476 × 1150
 
 BRACKET_SLOTS = [
-    # Left R32 (x=2)
-    ("2026-06-28T19:00", 2,  57,  120, 52, "left"),
-    ("2026-06-29T17:00", 2, 163,  120, 52, "left"),
-    ("2026-06-29T20:30", 2, 269,  120, 52, "left"),
-    ("2026-06-30T01:00", 2, 375,  120, 52, "left"),
-    ("2026-06-30T17:00", 2, 481,  120, 52, "left"),
-    ("2026-06-30T21:00", 2, 587,  120, 52, "left"),   # MetLife
-    ("2026-07-01T01:00", 2, 693,  120, 52, "left"),
-    ("2026-07-01T16:00", 2, 799,  120, 52, "left"),
-    # Left R16 (x=142)
-    ("2026-07-04T17:00", 142, 110, 120, 52, "center"),
-    ("2026-07-04T21:00", 142, 322, 120, 52, "center"),
-    ("2026-07-05T20:00", 142, 534, 120, 52, "center"),  # MetLife
-    ("2026-07-06T00:00", 142, 746, 120, 52, "center"),
-    # Left QF (x=282)
-    ("2026-07-09T20:00", 282, 216, 120, 52, "center"),
-    ("2026-07-10T19:00", 282, 640, 120, 52, "center"),
-    # Left SF (x=422)
-    ("2026-07-14T19:00", 422, 428, 120, 52, "center"),
-    # Final (x=562, wider & taller)
-    ("2026-07-19T19:00", 562, 423, 138, 64, "final"),
-    # Right SF (x=720)
-    ("2026-07-15T19:00", 720, 428, 120, 52, "center"),
-    # Right QF (x=860)
-    ("2026-07-11T21:00", 860, 216, 120, 52, "center"),
-    ("2026-07-12T01:00", 860, 640, 120, 52, "center"),
-    # Right R16 (x=1000)
-    ("2026-07-06T19:00", 1000, 110, 120, 52, "center"),
-    ("2026-07-07T00:00", 1000, 322, 120, 52, "center"),
-    ("2026-07-07T16:00", 1000, 534, 120, 52, "center"),
-    ("2026-07-07T20:00", 1000, 746, 120, 52, "center"),
-    # Right R32 (x=1140)
-    ("2026-07-01T20:00", 1140,  57, 120, 52, "left"),
-    ("2026-07-02T00:00", 1140, 163, 120, 52, "left"),
-    ("2026-07-02T19:00", 1140, 269, 120, 52, "left"),
-    ("2026-07-02T23:00", 1140, 375, 120, 52, "left"),
-    ("2026-07-03T03:00", 1140, 481, 120, 52, "left"),
-    ("2026-07-03T18:00", 1140, 587, 120, 52, "left"),
-    ("2026-07-03T22:00", 1140, 693, 120, 52, "left"),
-    ("2026-07-04T01:30", 1140, 799, 120, 52, "left"),
-    # 3rd Place (x=562, same width as Final)
-    ("2026-07-18T21:00", 562, 894, 138, 52, "third"),
+    # Left R32 (x=2, w=140, h=62)
+    ("2026-06-28T19:00",    2,  67, 140, 62, "left"),
+    ("2026-06-29T17:00",    2, 191, 140, 62, "left"),
+    ("2026-06-29T20:30",    2, 315, 140, 62, "left"),
+    ("2026-06-30T01:00",    2, 439, 140, 62, "left"),
+    ("2026-06-30T17:00",    2, 563, 140, 62, "left"),
+    ("2026-06-30T21:00",    2, 687, 140, 62, "left"),   # MetLife
+    ("2026-07-01T01:00",    2, 811, 140, 62, "left"),
+    ("2026-07-01T16:00",    2, 935, 140, 62, "left"),
+    # Left R16 (x=166)
+    ("2026-07-04T17:00",  166, 129, 140, 62, "center"),
+    ("2026-07-04T21:00",  166, 377, 140, 62, "center"),
+    ("2026-07-05T20:00",  166, 625, 140, 62, "center"),  # MetLife
+    ("2026-07-06T00:00",  166, 873, 140, 62, "center"),
+    # Left QF (x=330)
+    ("2026-07-09T20:00",  330, 253, 140, 62, "center"),
+    ("2026-07-10T19:00",  330, 749, 140, 62, "center"),
+    # Left SF (x=494)
+    ("2026-07-14T19:00",  494, 501, 140, 62, "center"),
+    # Final (x=658, wider & taller)
+    ("2026-07-19T19:00",  658, 492, 160, 80, "final"),
+    # Right SF (x=842)
+    ("2026-07-15T19:00",  842, 501, 140, 62, "center"),
+    # Right QF (x=1006)
+    ("2026-07-11T21:00", 1006, 253, 140, 62, "center"),
+    ("2026-07-12T01:00", 1006, 749, 140, 62, "center"),
+    # Right R16 (x=1170)
+    ("2026-07-06T19:00", 1170, 129, 140, 62, "center"),
+    ("2026-07-07T00:00", 1170, 377, 140, 62, "center"),
+    ("2026-07-07T16:00", 1170, 625, 140, 62, "center"),
+    ("2026-07-07T20:00", 1170, 873, 140, 62, "center"),
+    # Right R32 (x=1334)
+    ("2026-07-01T20:00", 1334,  67, 140, 62, "left"),
+    ("2026-07-02T00:00", 1334, 191, 140, 62, "left"),
+    ("2026-07-02T19:00", 1334, 315, 140, 62, "left"),
+    ("2026-07-02T23:00", 1334, 439, 140, 62, "left"),
+    ("2026-07-03T03:00", 1334, 563, 140, 62, "left"),
+    ("2026-07-03T18:00", 1334, 687, 140, 62, "left"),
+    ("2026-07-03T22:00", 1334, 811, 140, 62, "left"),
+    ("2026-07-04T01:30", 1334, 935, 140, 62, "left"),
+    # 3rd Place (x=658, same width as Final)
+    ("2026-07-18T21:00",  658, 1060, 160, 62, "third"),
 ]
 
-# SVG connector paths (pre-computed; coordinates match BRACKET_SLOTS above)
+# SVG connector paths — all coordinates derived from BRACKET_SLOTS above
 _CONNECTORS = """\
-<g stroke="#2a3d5c" stroke-width="1.25" fill="none">
-  <path d="M122,83 H132 V189 M122,189 H132 M132,136 H142"/>
-  <path d="M122,295 H132 V401 M122,401 H132 M132,348 H142"/>
-  <path d="M122,507 H132 V613 M122,613 H132 M132,560 H142"/>
-  <path d="M122,719 H132 V825 M122,825 H132 M132,772 H142"/>
-  <path d="M262,136 H272 V348 M262,348 H272 M272,242 H282"/>
-  <path d="M262,560 H272 V772 M262,772 H272 M272,666 H282"/>
-  <path d="M402,242 H412 V666 M402,666 H412 M412,454 H422"/>
-  <line x1="542" y1="454" x2="562" y2="454"/>
-  <line x1="700" y1="454" x2="720" y2="454"/>
-  <path d="M860,242 H850 V666 M860,666 H850 M850,454 H840"/>
-  <path d="M1000,136 H990 V348 M1000,348 H990 M990,242 H980"/>
-  <path d="M1000,560 H990 V772 M1000,772 H990 M990,666 H980"/>
-  <path d="M1140,83 H1130 V189 M1140,189 H1130 M1130,136 H1120"/>
-  <path d="M1140,295 H1130 V401 M1140,401 H1130 M1130,348 H1120"/>
-  <path d="M1140,507 H1130 V613 M1140,613 H1130 M1130,560 H1120"/>
-  <path d="M1140,719 H1130 V825 M1140,825 H1130 M1130,772 H1120"/>
-  <line x1="482" y1="480" x2="482" y2="892" stroke-dasharray="5,3.5"/>
-  <line x1="780" y1="480" x2="780" y2="892" stroke-dasharray="5,3.5"/>
-  <line x1="482" y1="892" x2="562" y2="892"/>
-  <line x1="780" y1="892" x2="700" y2="892"/>
+<g stroke="#2a3d5c" stroke-width="1.75" fill="none">
+  <path d="M142,98 H154 V222 M142,222 H154 M154,160 H166"/>
+  <path d="M142,346 H154 V470 M142,470 H154 M154,408 H166"/>
+  <path d="M142,594 H154 V718 M142,718 H154 M154,656 H166"/>
+  <path d="M142,842 H154 V966 M142,966 H154 M154,904 H166"/>
+  <path d="M306,160 H318 V408 M306,408 H318 M318,284 H330"/>
+  <path d="M306,656 H318 V904 M306,904 H318 M318,780 H330"/>
+  <path d="M470,284 H482 V780 M470,780 H482 M482,532 H494"/>
+  <line x1="634" y1="532" x2="658" y2="532"/>
+  <line x1="818" y1="532" x2="842" y2="532"/>
+  <path d="M1006,284 H994 V780 M1006,780 H994 M994,532 H982"/>
+  <path d="M1170,160 H1158 V408 M1170,408 H1158 M1158,284 H1146"/>
+  <path d="M1170,656 H1158 V904 M1170,904 H1158 M1158,780 H1146"/>
+  <path d="M1334,98 H1322 V222 M1334,222 H1322 M1322,160 H1310"/>
+  <path d="M1334,346 H1322 V470 M1334,470 H1322 M1322,408 H1310"/>
+  <path d="M1334,594 H1322 V718 M1334,718 H1322 M1322,656 H1310"/>
+  <path d="M1334,842 H1322 V966 M1334,966 H1322 M1322,904 H1310"/>
+  <line x1="564" y1="563" x2="564" y2="1058" stroke-dasharray="6,4"/>
+  <line x1="912" y1="563" x2="912" y2="1058" stroke-dasharray="6,4"/>
+  <line x1="564" y1="1058" x2="658" y2="1058"/>
+  <line x1="912" y1="1058" x2="818" y2="1058"/>
 </g>"""
 
 _ROUND_LABELS = """\
-<text x="62"   y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
-<text x="202"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
-<text x="342"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
-<text x="482"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
-<text x="631"  y="17" font-size="8" font-weight="600" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
-<text x="780"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
-<text x="920"  y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
-<text x="1060" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
-<text x="1200" y="17" font-size="8" font-weight="600" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>"""
+<text x="72"   y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
+<text x="236"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="400"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="564"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="738"  y="22" font-size="11" font-weight="700" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
+<text x="912"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="1076" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="1240" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="1404" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>"""
 
 
 def _hx(s):
@@ -561,55 +561,55 @@ def render_box(utc_key, x, y, w, h, layout, match):
     bstroke = "#f5a623" if layout == "final" else ("rgba(245,166,35,0.55)" if is_ml else "#1e2740")
     bsw     = "1.5"     if layout == "final" else ("1"                     if is_ml else ".75")
 
-    p  = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="4" fill="#131929" stroke="{bstroke}" stroke-width="{bsw}"/>']
+    p  = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="5" fill="#131929" stroke="{bstroke}" stroke-width="{bsw}"/>']
     cx = x + w // 2
-    sx = x + w - 6   # score right-edge x
+    sx = x + w - 8   # score right-edge x
 
     def team_row(ty, tc, ti, tw_, td, score_val):
-        row = [f'<text x="{x+8}" y="{ty}" font-size="12" fill="{tc}" {ti} {tw_}>{td}</text>']
+        row = [f'<text x="{x+10}" y="{ty}" font-size="14" fill="{tc}" {ti} {tw_}>{td}</text>']
         if score_val is not None:
-            row.append(f'<text x="{sx}" y="{ty}" font-size="12" fill="{tc}" font-weight="700" text-anchor="end">{score_val}{suffix if score_val == hg else ""}</text>')
+            row.append(f'<text x="{sx}" y="{ty}" font-size="14" fill="{tc}" font-weight="700" text-anchor="end">{score_val}{suffix if score_val == hg else ""}</text>')
         return row
 
     if layout == "final":
-        # Taller 64px box: home / vs / away / venue
+        # 80px tall Final box: home / vs / away / venue
         if has_score:
-            p.append(f'<text x="{cx-8}" y="{y+18}" font-size="11" fill="{hc}" {hi} text-anchor="end">{hd}</text>')
-            p.append(f'<text x="{cx+8}" y="{y+18}" font-size="11" fill="{hc}" font-weight="700" text-anchor="start">{hg}</text>')
-            p.append(f'<text x="{cx}"   y="{y+32}" font-size="8"  fill="#7a8099" text-anchor="middle">vs</text>')
-            p.append(f'<text x="{cx-8}" y="{y+46}" font-size="11" fill="{ac}" {ai} text-anchor="end">{ad}</text>')
-            p.append(f'<text x="{cx+8}" y="{y+46}" font-size="11" fill="{ac}" font-weight="700" text-anchor="start">{ag}</text>')
+            p.append(f'<text x="{cx-10}" y="{y+24}" font-size="13" fill="{hc}" {hi} text-anchor="end">{hd}</text>')
+            p.append(f'<text x="{cx+10}" y="{y+24}" font-size="13" fill="{hc}" font-weight="700" text-anchor="start">{hg}</text>')
+            p.append(f'<text x="{cx}"    y="{y+42}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx-10}" y="{y+60}" font-size="13" fill="{ac}" {ai} text-anchor="end">{ad}</text>')
+            p.append(f'<text x="{cx+10}" y="{y+60}" font-size="13" fill="{ac}" font-weight="700" text-anchor="start">{ag}</text>')
         else:
-            p.append(f'<text x="{cx}" y="{y+18}" font-size="11" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
-            p.append(f'<text x="{cx}" y="{y+32}" font-size="8"  fill="#7a8099" text-anchor="middle">vs</text>')
-            p.append(f'<text x="{cx}" y="{y+46}" font-size="11" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
-        p.append(f'<text x="{cx}" y="{y+60}" font-size="8.5" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(vname)}</text>')
+            p.append(f'<text x="{cx}" y="{y+24}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+42}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx}" y="{y+60}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
+        p.append(f'<text x="{cx}" y="{y+74}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(vname)}</text>')
 
     elif layout == "third":
         if home or away:
-            p.append(f'<text x="{cx}" y="{y+20}" font-size="11" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
-            p.append(f'<text x="{cx}" y="{y+35}" font-size="11" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
-            p.append(f'<text x="{cx}" y="{y+48}" font-size="9"  fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
+            p.append(f'<text x="{cx}" y="{y+24}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+42}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
+            p.append(f'<text x="{cx}" y="{y+57}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
         else:
-            p.append(f'<text x="{cx}" y="{y+22}" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>')
-            p.append(f'<text x="{cx}" y="{y+40}" font-size="9"  fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
+            p.append(f'<text x="{cx}" y="{y+28}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>')
+            p.append(f'<text x="{cx}" y="{y+48}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
 
     elif layout == "center" and not (home or away):
         # Pure TBD centred
-        p.append(f'<text x="{cx}" y="{y+22}" font-size="11" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>')
-        p.append(f'<text x="{cx}" y="{y+40}" font-size="9"  fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
+        p.append(f'<text x="{cx}" y="{y+28}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>')
+        p.append(f'<text x="{cx}" y="{y+48}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
 
     else:
         # Left-aligned (R32 both sides, or center once teams known)
         if has_score:
-            p += team_row(y+17, hc, hi, hw, hd, hg)
-            p += team_row(y+31, ac, ai, aw, ad, ag)
+            p += team_row(y+21, hc, hi, hw, hd, hg)
+            p += team_row(y+40, ac, ai, aw, ad, ag)
         else:
-            p.append(f'<text x="{x+8}" y="{y+17}" font-size="12" fill="{hc}" {hi}>{hd}</text>')
-            p.append(f'<text x="{x+8}" y="{y+31}" font-size="12" fill="{ac}" {ai}>{ad}</text>')
-        p.append(f'<text x="{x+8}" y="{y+45}" font-size="9" fill="{vfill}" {vfw}>{vpfx}{_hx(meta)}</text>')
+            p.append(f'<text x="{x+10}" y="{y+21}" font-size="14" fill="{hc}" {hi}>{hd}</text>')
+            p.append(f'<text x="{x+10}" y="{y+40}" font-size="14" fill="{ac}" {ai}>{ad}</text>')
+        p.append(f'<text x="{x+10}" y="{y+56}" font-size="10.5" fill="{vfill}" {vfw}>{vpfx}{_hx(meta)}</text>')
         if is_live:
-            p.append(f'<circle cx="{x+w-8}" cy="{y+8}" r="3" fill="#f87171"/>')
+            p.append(f'<circle cx="{x+w-10}" cy="{y+10}" r="4" fill="#f87171"/>')
 
     return "\n".join(p)
 
@@ -639,7 +639,7 @@ def build_bracket_page(matches, as_of_str):
         boxes.append(render_box(utc_key, x, y, w, h, layout, match))
 
     # 3rd-place label (above the box)
-    third_label = '<text x="631" y="878" font-size="8" font-weight="600" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
+    third_label = '<text x="738" y="1044" font-size="10" font-weight="700" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
 
     boxes_svg = "\n".join(boxes)
 
@@ -651,7 +651,7 @@ def build_bracket_page(matches, as_of_str):
   <title>FIFA World Cup 2026 — Knockout Stage Bracket</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -659,21 +659,27 @@ def build_bracket_page(matches, as_of_str):
       color: #e8eaf0;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       min-height: 100vh;
-      padding: 2rem 1.5rem 3rem;
+      padding: 2rem 1rem 3rem;
     }}
-    .page-header {{ text-align: center; margin-bottom: 2rem; }}
-    .page-header h1 {{ font-size: 1.6rem; font-weight: 600; color: #fff; letter-spacing: .02em; }}
+    .page-header {{ text-align: center; margin-bottom: 1.75rem; }}
+    .page-header h1 {{
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .02em;
+    }}
     .page-header h1 span {{ color: #f5a623; }}
-    .page-header p {{ margin-top: .4rem; font-size: .8rem; color: #7a8099; }}
+    .page-header p {{ margin-top: .4rem; font-size: .85rem; color: #7a8099; }}
     .legend {{
-      display: flex; gap: 1.25rem; justify-content: center;
-      flex-wrap: wrap; margin-top: .9rem; font-size: .75rem; color: #7a8099;
+      display: flex; gap: 1.5rem; justify-content: center;
+      flex-wrap: wrap; margin-top: 1rem; font-size: .8rem; color: #7a8099;
     }}
-    .legend span {{ display: flex; align-items: center; gap: 5px; }}
-    .bracket-wrap {{ overflow-x: auto; padding: .5rem 0 1rem; }}
+    .legend span {{ display: flex; align-items: center; gap: 6px; }}
+    .bracket-wrap {{ width: 100%; padding: .5rem 0 1rem; }}
+    .bracket-wrap svg {{ display: block; width: 100%; height: auto; }}
     .footer-note {{
       text-align: center; margin-top: 1.5rem;
-      font-size: .72rem; color: #4a5270;
+      font-size: .75rem; color: #4a5270;
       max-width: 700px; margin-left: auto; margin-right: auto;
     }}
   </style>
@@ -683,15 +689,14 @@ def build_bracket_page(matches, as_of_str):
   <h1>FIFA World Cup 2026 — <span>Knockout Stage</span></h1>
   <p>Last updated: {as_of_str} with latest available data from football-data.org</p>
   <div class="legend">
-    <span><span style="color:#e8eaf0;font-weight:600">●</span> Confirmed / result</span>
+    <span><span style="color:#e8eaf0;font-weight:700">●</span> Confirmed / result</span>
     <span><span style="color:#7a8099">●</span> Eliminated / loser</span>
     <span><span style="color:#6b7280;font-style:italic">●</span> TBD</span>
     <span><span style="color:#f5a623">★</span> MetLife Stadium</span>
   </div>
 </div>
 <div class="bracket-wrap">
-<svg width="1262" height="975"
-     viewBox="0 0 1262 975"
+<svg viewBox="0 0 1476 1150"
      xmlns="http://www.w3.org/2000/svg"
      font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif">
 {_ROUND_LABELS}
