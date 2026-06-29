@@ -389,90 +389,67 @@ STAGE_LABELS = {
 }
 
 # ── Bracket slot layout ────────────────────────────────────────────────────────
-# Box: W=140, H=62  Slot height: 124  Gap between rounds: 24
-# Column x positions:
-#   Left  R32=2   R16=166  QF=330  SF=494  Final=658(w=160,h=80)
-#   Right SF=842  QF=1006  R16=1170  R32=1334
-# SVG viewBox: 1476 × 1150
+# Box W=164 H=80  SH=160  Gap=24  W_Final=180 H_Final=96
+# Left  x: R32=2  R16=190  QF=378  SF=566  Final=754
+# Right x: SF=958 QF=1146  R16=1334  R32=1522
+# ViewBox: 1688 × 1448
 
 BRACKET_SLOTS = [
-    # Left R32 (x=2, w=140, h=62)
-    ("2026-06-28T19:00",    2,  67, 140, 62, "left"),
-    ("2026-06-29T17:00",    2, 191, 140, 62, "left"),
-    ("2026-06-29T20:30",    2, 315, 140, 62, "left"),
-    ("2026-06-30T01:00",    2, 439, 140, 62, "left"),
-    ("2026-06-30T17:00",    2, 563, 140, 62, "left"),
-    ("2026-06-30T21:00",    2, 687, 140, 62, "left"),   # MetLife
-    ("2026-07-01T01:00",    2, 811, 140, 62, "left"),
-    ("2026-07-01T16:00",    2, 935, 140, 62, "left"),
-    # Left R16 (x=166)
-    ("2026-07-04T17:00",  166, 129, 140, 62, "center"),
-    ("2026-07-04T21:00",  166, 377, 140, 62, "center"),
-    ("2026-07-05T20:00",  166, 625, 140, 62, "center"),  # MetLife
-    ("2026-07-06T00:00",  166, 873, 140, 62, "center"),
-    # Left QF (x=330)
-    ("2026-07-09T20:00",  330, 253, 140, 62, "center"),
-    ("2026-07-10T19:00",  330, 749, 140, 62, "center"),
-    # Left SF (x=494)
-    ("2026-07-14T19:00",  494, 501, 140, 62, "center"),
-    # Final (x=658, wider & taller)
-    ("2026-07-19T19:00",  658, 492, 160, 80, "final"),
-    # Right SF (x=842)
-    ("2026-07-15T19:00",  842, 501, 140, 62, "center"),
-    # Right QF (x=1006)
-    ("2026-07-11T21:00", 1006, 253, 140, 62, "center"),
-    ("2026-07-12T01:00", 1006, 749, 140, 62, "center"),
-    # Right R16 (x=1170)
-    ("2026-07-06T19:00", 1170, 129, 140, 62, "center"),
-    ("2026-07-07T00:00", 1170, 377, 140, 62, "center"),
-    ("2026-07-07T16:00", 1170, 625, 140, 62, "center"),
-    ("2026-07-07T20:00", 1170, 873, 140, 62, "center"),
-    # Right R32 (x=1334)
-    ("2026-07-01T20:00", 1334,  67, 140, 62, "left"),
-    ("2026-07-02T00:00", 1334, 191, 140, 62, "left"),
-    ("2026-07-02T19:00", 1334, 315, 140, 62, "left"),
-    ("2026-07-02T23:00", 1334, 439, 140, 62, "left"),
-    ("2026-07-03T03:00", 1334, 563, 140, 62, "left"),
-    ("2026-07-03T18:00", 1334, 687, 140, 62, "left"),
-    ("2026-07-03T22:00", 1334, 811, 140, 62, "left"),
-    ("2026-07-04T01:30", 1334, 935, 140, 62, "left"),
-    # 3rd Place (x=658, same width as Final)
-    ("2026-07-18T21:00",  658, 1060, 160, 62, "third"),
+    # Left R32 (x=2, w=164, h=80)
+    ("2026-06-28T19:00",    2,   76, 164, 80, "left"),
+    ("2026-06-29T17:00",    2,  236, 164, 80, "left"),
+    ("2026-06-29T20:30",    2,  396, 164, 80, "left"),
+    ("2026-06-30T01:00",    2,  556, 164, 80, "left"),
+    ("2026-06-30T17:00",    2,  716, 164, 80, "left"),
+    ("2026-06-30T21:00",    2,  876, 164, 80, "left"),   # MetLife
+    ("2026-07-01T01:00",    2, 1036, 164, 80, "left"),
+    ("2026-07-01T16:00",    2, 1196, 164, 80, "left"),
+    # Left R16 (x=190)
+    ("2026-07-04T17:00",  190,  156, 164, 80, "center"),
+    ("2026-07-04T21:00",  190,  476, 164, 80, "center"),
+    ("2026-07-05T20:00",  190,  796, 164, 80, "center"),  # MetLife
+    ("2026-07-06T00:00",  190, 1116, 164, 80, "center"),
+    # Left QF (x=378)
+    ("2026-07-09T20:00",  378,  316, 164, 80, "center"),
+    ("2026-07-10T19:00",  378,  956, 164, 80, "center"),
+    # Left SF (x=566)
+    ("2026-07-14T19:00",  566,  636, 164, 80, "center"),
+    # Final (x=754, wider + taller)
+    ("2026-07-19T19:00",  754,  628, 180, 96, "final"),
+    # Right SF (x=958)
+    ("2026-07-15T19:00",  958,  636, 164, 80, "center"),
+    # Right QF (x=1146)
+    ("2026-07-11T21:00", 1146,  316, 164, 80, "center"),
+    ("2026-07-12T01:00", 1146,  956, 164, 80, "center"),
+    # Right R16 (x=1334)
+    ("2026-07-06T19:00", 1334,  156, 164, 80, "center"),
+    ("2026-07-07T00:00", 1334,  476, 164, 80, "center"),
+    ("2026-07-07T16:00", 1334,  796, 164, 80, "center"),
+    ("2026-07-07T20:00", 1334, 1116, 164, 80, "center"),
+    # Right R32 (x=1522)
+    ("2026-07-01T20:00", 1522,   76, 164, 80, "left"),
+    ("2026-07-02T00:00", 1522,  236, 164, 80, "left"),
+    ("2026-07-02T19:00", 1522,  396, 164, 80, "left"),
+    ("2026-07-02T23:00", 1522,  556, 164, 80, "left"),
+    ("2026-07-03T03:00", 1522,  716, 164, 80, "left"),
+    ("2026-07-03T18:00", 1522,  876, 164, 80, "left"),
+    ("2026-07-03T22:00", 1522, 1036, 164, 80, "left"),
+    ("2026-07-04T01:30", 1522, 1196, 164, 80, "left"),
+    # 3rd Place (x=754, same width as Final)
+    ("2026-07-18T21:00",  754, 1338, 180, 80, "third"),
 ]
 
-# Maps each downstream slot index to the two upstream slot indices that feed it.
-# Derived from the SVG connector paths — cross-verified against y-coordinate midpoints.
-# slot_index: (feeder_1, feeder_2) where feeder_1 provides the home team,
-#             feeder_2 provides the away team for that downstream match.
+# Derived from BRACKET_SLOTS — which two upstream slots feed each downstream slot.
 BRACKET_PROGRESSION = {
-    # Left half: R32 → R16
-    8:  (0, 1),    # Left R16[0] ← Left R32[0] (Jun28) + Left R32[1] (Jun29 NRG)
-    9:  (2, 3),    # Left R16[1] ← Left R32[2] (Jun29 Gil) + Left R32[3] (Jun30 BBVA)
-    10: (4, 5),    # Left R16[2] ← Left R32[4] (Jun30 AT&T) + Left R32[5] (Jun30 MetLife)
-    11: (6, 7),    # Left R16[3] ← Left R32[6] (Jul1 Azteca) + Left R32[7] (Jul1 MBS)
-    # Left half: R16 → QF
-    12: (8, 9),    # Left QF[0] ← Left R16[0] + Left R16[1]
-    13: (10, 11),  # Left QF[1] ← Left R16[2] + Left R16[3]
-    # Left half: QF → SF
-    14: (12, 13),  # Left SF ← Left QF[0] + Left QF[1]
-    # Right half: R32 → R16
-    19: (23, 24),  # Right R16[0] ← Right R32[0] (Jul1 Lumen) + Right R32[1] (Jul2 Levi's)
-    20: (25, 26),  # Right R16[1] ← Right R32[2] (Jul2 SoFi) + Right R32[3] (Jul2 BMO)
-    21: (27, 28),  # Right R16[2] ← Right R32[4] (Jul3 BC) + Right R32[5] (Jul3 AT&T)
-    22: (29, 30),  # Right R16[3] ← Right R32[6] (Jul3 Hard Rock) + Right R32[7] (Jul4 Arrowhead)
-    # Right half: R16 → QF
-    17: (19, 20),  # Right QF[0] ← Right R16[0] + Right R16[1]
-    18: (21, 22),  # Right QF[1] ← Right R16[2] + Right R16[3]
-    # Right half: QF → SF
-    16: (17, 18),  # Right SF ← Right QF[0] + Right QF[1]
-    # Final and 3rd Place
-    15: (14, 16),  # Final ← Left SF (14) + Right SF (16)
-    31: (14, 16),  # 3rd Place ← Losers of Left SF (14) + Right SF (16)
+    8:  (0, 1),  9:  (2, 3),  10: (4, 5),  11: (6, 7),
+    12: (8, 9),  13: (10,11), 14: (12,13),
+    19: (23,24), 20: (25,26), 21: (27,28), 22: (29,30),
+    17: (19,20), 18: (21,22), 16: (17,18),
+    15: (14,16), 31: (14,16),
 }
 
 
 def _winner_name(match):
-    """Return the name of the winning team from a finished match, or None."""
     if not match or match.get("status") not in FINISHED_STATUSES:
         return None
     w = (match.get("score") or {}).get("winner", "")
@@ -480,11 +457,10 @@ def _winner_name(match):
         return ((match.get("homeTeam") or {}).get("name") or "").strip() or None
     if w == "AWAY_TEAM":
         return ((match.get("awayTeam") or {}).get("name") or "").strip() or None
-    return None  # draw (shouldn't happen in knockout)
+    return None
 
 
 def _loser_name(match):
-    """Return the name of the losing team from a finished match, or None."""
     if not match or match.get("status") not in FINISHED_STATUSES:
         return None
     w = (match.get("score") or {}).get("winner", "")
@@ -496,114 +472,105 @@ def _loser_name(match):
 
 
 def _derive_bracket(slot_matches):
-    """
-    Given a dict {slot_index: match}, return a dict {slot_index: (home_name, away_name)}
-    with derived team names for slots where the API shows TBD teams but we can
-    compute the winner from a completed upstream match.
-    3rd-place slot uses losers rather than winners.
-    """
     derived = {}
     for dest, (src1, src2) in BRACKET_PROGRESSION.items():
-        m1 = slot_matches.get(src1)
-        m2 = slot_matches.get(src2)
-        if dest == 31:
-            h = _loser_name(m1)
-            a = _loser_name(m2)
-        else:
-            h = _winner_name(m1)
-            a = _winner_name(m2)
+        m1, m2 = slot_matches.get(src1), slot_matches.get(src2)
+        h = _loser_name(m1) if dest == 31 else _winner_name(m1)
+        a = _loser_name(m2) if dest == 31 else _winner_name(m2)
         if h or a:
             derived[dest] = (h, a)
     return derived
+
+
+# ── SVG static strings (coordinates match BRACKET_SLOTS above) ────────────────
+
 _CONNECTORS = """\
 <g stroke="#2a3d5c" stroke-width="1.75" fill="none">
-  <path d="M142,112 H154 V264 M142,264 H154 M154,188 H166"/>
-  <path d="M142,416 H154 V568 M142,568 H154 M154,492 H166"/>
-  <path d="M142,720 H154 V872 M142,872 H154 M154,796 H166"/>
-  <path d="M142,1024 H154 V1176 M142,1176 H154 M154,1100 H166"/>
-  <path d="M306,188 H318 V492 M306,492 H318 M318,340 H330"/>
-  <path d="M306,796 H318 V1100 M306,1100 H318 M318,948 H330"/>
-  <path d="M470,340 H482 V948 M470,948 H482 M482,644 H494"/>
-  <line x1="634" y1="644" x2="658" y2="644"/>
-  <line x1="818" y1="644" x2="842" y2="644"/>
-  <path d="M1006,340 H994 V948 M1006,948 H994 M994,644 H982"/>
-  <path d="M1170,188 H1158 V492 M1170,492 H1158 M1158,340 H1146"/>
-  <path d="M1170,796 H1158 V1100 M1170,1100 H1158 M1158,948 H1146"/>
-  <path d="M1334,112 H1322 V264 M1334,264 H1322 M1322,188 H1310"/>
-  <path d="M1334,416 H1322 V568 M1334,568 H1322 M1322,492 H1310"/>
-  <path d="M1334,720 H1322 V872 M1334,872 H1322 M1322,796 H1310"/>
-  <path d="M1334,1024 H1322 V1176 M1334,1176 H1322 M1322,1100 H1310"/>
-  <line x1="564" y1="682" x2="564" y2="1268" stroke-dasharray="6,4"/>
-  <line x1="912" y1="682" x2="912" y2="1268" stroke-dasharray="6,4"/>
-  <line x1="564" y1="1268" x2="658" y2="1268"/>
-  <line x1="912" y1="1268" x2="818" y2="1268"/>
+  <path d="M166,116 H178 V276 M166,276 H178 M178,196 H190"/>
+  <path d="M166,436 H178 V596 M166,596 H178 M178,516 H190"/>
+  <path d="M166,756 H178 V916 M166,916 H178 M178,836 H190"/>
+  <path d="M166,1076 H178 V1236 M166,1236 H178 M178,1156 H190"/>
+  <path d="M354,196 H366 V516 M354,516 H366 M366,356 H378"/>
+  <path d="M354,836 H366 V1156 M354,1156 H366 M366,996 H378"/>
+  <path d="M542,356 H554 V996 M542,996 H554 M554,676 H566"/>
+  <line x1="730" y1="676" x2="754" y2="676"/>
+  <line x1="934" y1="676" x2="958" y2="676"/>
+  <path d="M1146,356 H1134 V996 M1146,996 H1134 M1134,676 H1122"/>
+  <path d="M1334,196 H1322 V516 M1334,516 H1322 M1322,356 H1310"/>
+  <path d="M1334,836 H1322 V1156 M1334,1156 H1322 M1322,996 H1310"/>
+  <path d="M1522,116 H1510 V276 M1522,276 H1510 M1510,196 H1498"/>
+  <path d="M1522,436 H1510 V596 M1522,596 H1510 M1510,516 H1498"/>
+  <path d="M1522,756 H1510 V916 M1522,916 H1510 M1510,836 H1498"/>
+  <path d="M1522,1076 H1510 V1236 M1522,1236 H1510 M1510,1156 H1498"/>
+  <line x1="648" y1="716" x2="648" y2="1336" stroke-dasharray="6,4"/>
+  <line x1="1040" y1="716" x2="1040" y2="1336" stroke-dasharray="6,4"/>
+  <line x1="648" y1="1336" x2="754" y2="1336"/>
+  <line x1="1040" y1="1336" x2="934" y2="1336"/>
 </g>"""
 
 _ROUND_LABELS = """\
-<text x="72"   y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
-<text x="236"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
-<text x="400"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
-<text x="564"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
-<text x="738"  y="22" font-size="11" font-weight="700" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
-<text x="912"  y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
-<text x="1076" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
-<text x="1240" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
-<text x="1404" y="22" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>"""
+<text x="84"   y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>
+<text x="272"  y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="460"  y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="648"  y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="844"  y="26" font-size="11" font-weight="700" fill="#f5a623" text-anchor="middle" letter-spacing=".07em">FINAL</text>
+<text x="1040" y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">SEMIFINALS</text>
+<text x="1228" y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">QUARTERFINALS</text>
+<text x="1416" y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 16</text>
+<text x="1604" y="26" font-size="11" font-weight="700" fill="#60a5fa" text-anchor="middle" letter-spacing=".07em">ROUND OF 32</text>"""
 
 
 def _hx(s):
-    """HTML-escape a string for safe embedding in SVG text."""
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    """HTML-escape for safe embedding in SVG text."""
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _tfont(name):
+    """Adaptive font-size so long names don't overflow W=164 boxes."""
+    n = len(name) if name else 0
+    if n <= 14: return "14"
+    if n <= 17: return "13"
+    return "12"
 
 
 def render_box(utc_key, x, y, w, h, layout, match, override_home=None, override_away=None):
-    """
-    Return SVG string for one bracket slot.
-    match may be None if no API data found for this slot.
-    """
+    """Render one SVG bracket slot.  override_* fills TBD slots with derived winners."""
     m = match or {}
     home_obj = (m.get("homeTeam") or {})
     away_obj = (m.get("awayTeam") or {})
     home = (home_obj.get("name") or "").strip()
     away = (away_obj.get("name") or "").strip()
-
-    # If the API still shows TBD for a team but we've derived the winner
-    # from a completed upstream match, substitute the derived name.
     if not home and override_home:
         home = override_home
     if not away and override_away:
         away = override_away
 
-    status = m.get("status", "")
+    status     = m.get("status", "")
     score_data = m.get("score") or {}
-    ft   = score_data.get("fullTime") or {}
-    cs   = score_data.get("currentScore") or score_data.get("halfTime") or {}
-    winner   = score_data.get("winner", "")
-    duration = score_data.get("duration", "REGULAR")
+    ft         = score_data.get("fullTime") or {}
+    cs         = score_data.get("currentScore") or score_data.get("halfTime") or {}
+    winner     = score_data.get("winner", "")
+    duration   = score_data.get("duration", "REGULAR")
 
     if status in FINISHED_STATUSES:
-        et_goals  = score_data.get("extraTime") or {}
+        et_goals = score_data.get("extraTime") or {}
         hg = (ft.get("home") or 0) + (et_goals.get("home") or 0)
         ag = (ft.get("away") or 0) + (et_goals.get("away") or 0)
-        has_score = True
-        is_live   = False
-        suffix    = "" if duration == "REGULAR" else (" (ET)" if duration == "EXTRA_TIME" else " (PEN)")
+        has_score, is_live = True, False
+        suffix = "" if duration == "REGULAR" else (" (ET)" if duration == "EXTRA_TIME" else " (PEN)")
     elif status in LIVE_STATUSES:
         hg = cs.get("home") if cs.get("home") is not None else 0
         ag = cs.get("away") if cs.get("away") is not None else 0
-        has_score = True
-        is_live   = True
-        suffix    = ""
+        has_score, is_live = True, True
+        suffix = ""
     else:
         hg = ag = None
-        has_score = False
-        is_live   = False
-        suffix    = ""
+        has_score, is_live = False, False
+        suffix = ""
 
-    # Winner/loser colouring for finished matches
     if has_score and not is_live:
-        hc = "#e8eaf0" if winner != "AWAY_TEAM"  else "#7a8099"
-        ac = "#e8eaf0" if winner != "HOME_TEAM"  else "#7a8099"
+        hc = "#e8eaf0" if winner != "AWAY_TEAM" else "#7a8099"
+        ac = "#e8eaf0" if winner != "HOME_TEAM" else "#7a8099"
         hw = 'font-weight="600"' if winner == "HOME_TEAM" else ""
         aw = 'font-weight="600"' if winner == "AWAY_TEAM" else ""
     else:
@@ -615,86 +582,87 @@ def render_box(utc_key, x, y, w, h, layout, match, override_home=None, override_
     ai = 'font-style="italic"' if not away else ""
     hd = _hx(home) if home else "TBD"
     ad = _hx(away) if away else "TBD"
+    hf = _tfont(home or "TBD")
+    af = _tfont(away or "TBD")
 
-    # Venue + date
-    venue_full = resolve_venue(m) if m else KNOCKOUT_VENUE_LOOKUP.get(utc_key, "")
-    vname = venue_full.split(", ", 1)[0] if venue_full else ""
+    # Venue: split into stadium name and city/country
+    venue_full = resolve_venue(m) if m else ""
+    if not venue_full:
+        venue_full = KNOCKOUT_VENUE_LOOKUP.get(utc_key, "")
+    _vp   = venue_full.split(", ", 1)
+    vname = _hx(_vp[0]) if _vp else ""
+    vcity = _hx(_vp[1]) if len(_vp) > 1 else ""
     is_ml = "metlife" in venue_full.lower()
 
-    et_now = now_eastern()
-    et_tz  = et_now.tzinfo
-    utc_str = m.get("utcDate", "")
-    if utc_str:
-        try:
-            utc_dt  = datetime.datetime.fromisoformat(utc_str.replace("Z", "+00:00"))
-            et_dt   = utc_dt.astimezone(et_tz)
-            date_s  = et_dt.strftime("%b %-d")
-            time_s  = et_dt.strftime("%I:%M %p ET").lstrip("0")
-            meta    = f"{date_s} · {time_s}"
-        except Exception:
-            meta = vname
-    else:
-        meta = vname
-
-    vfill  = "#f5a623" if is_ml else "#7a8099"
-    vfw    = 'font-weight="600"' if is_ml else ""
-    vpfx   = "★ " if is_ml else ""
+    # Colours and stroke for box border
+    vfill   = "#f5a623" if is_ml else "#7a8099"
     bstroke = "#f5a623" if layout == "final" else ("rgba(245,166,35,0.55)" if is_ml else "#1e2740")
     bsw     = "1.5"     if layout == "final" else ("1"                     if is_ml else ".75")
 
-    p  = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="5" fill="#131929" stroke="{bstroke}" stroke-width="{bsw}"/>']
+    # Date/time meta string
+    et_now = now_eastern()
+    utc_str = m.get("utcDate", "")
+    if utc_str:
+        try:
+            utc_dt = datetime.datetime.fromisoformat(utc_str.replace("Z", "+00:00"))
+            et_dt  = utc_dt.astimezone(et_now.tzinfo)
+            meta   = et_dt.strftime("%b %-d · %-I:%M %p ET").replace("  ", " ")
+        except Exception:
+            meta = ""
+    else:
+        meta = ""
+
+    vpfx = "★ " if is_ml else ""
+    p = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="5" fill="#131929" stroke="{bstroke}" stroke-width="{bsw}"/>']
     cx = x + w // 2
-    sx = x + w - 8   # score right-edge x
-
-    # Full venue line shown at the bottom of every box
-    venue_line = _hx(f"\u2605 {venue_full}") if (is_ml and venue_full) else _hx(venue_full)
-
-    def team_row(ty, tc, ti, tw_, td, score_val):
-        row = [f'<text x="{x+10}" y="{ty}" font-size="14" fill="{tc}" {ti} {tw_}>{td}</text>']
-        if score_val is not None:
-            row.append(f'<text x="{sx}" y="{ty}" font-size="14" fill="{tc}" font-weight="700" text-anchor="end">{score_val}{suffix if score_val == hg else ""}</text>')
-        return row
+    sx = x + w - 8   # score right-edge
 
     if layout == "final":
-        # 92px tall Final box: home / vs / away / date / venue
+        # 96-px tall Final box: team / vs / team / date / venue-name / city
         if has_score:
-            p.append(f'<text x="{cx-10}" y="{y+22}" font-size="13" fill="{hc}" {hi} text-anchor="end">{hd}</text>')
-            p.append(f'<text x="{cx+10}" y="{y+22}" font-size="13" fill="{hc}" font-weight="700" text-anchor="start">{hg}</text>')
-            p.append(f'<text x="{cx}"    y="{y+38}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
-            p.append(f'<text x="{cx-10}" y="{y+54}" font-size="13" fill="{ac}" {ai} text-anchor="end">{ad}</text>')
-            p.append(f'<text x="{cx+10}" y="{y+54}" font-size="13" fill="{ac}" font-weight="700" text-anchor="start">{ag}</text>')
+            p.append(f'<text x="{cx-10}" y="{y+21}" font-size="13" fill="{hc}" {hi} text-anchor="end">{hd}</text>')
+            p.append(f'<text x="{cx+10}" y="{y+21}" font-size="13" fill="{hc}" font-weight="700" text-anchor="start">{hg}</text>')
+            p.append(f'<text x="{cx}"    y="{y+37}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx-10}" y="{y+53}" font-size="13" fill="{ac}" {ai} text-anchor="end">{ad}</text>')
+            p.append(f'<text x="{cx+10}" y="{y+53}" font-size="13" fill="{ac}" font-weight="700" text-anchor="start">{ag}</text>')
         else:
-            p.append(f'<text x="{cx}" y="{y+22}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
-            p.append(f'<text x="{cx}" y="{y+38}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
-            p.append(f'<text x="{cx}" y="{y+54}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
-        p.append(f'<text x="{cx}" y="{y+70}" font-size="10" fill="#7a8099" text-anchor="middle">{_hx(meta)}</text>')
-        p.append(f'<text x="{cx}" y="{y+84}" font-size="10" font-weight="600" fill="{vfill}" text-anchor="middle">{venue_line}</text>')
+            p.append(f'<text x="{cx}" y="{y+21}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+37}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx}" y="{y+53}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
+        p.append(f'<text x="{cx}" y="{y+68}" font-size="9.5" fill="#7a8099" text-anchor="middle">{meta}</text>')
+        p.append(f'<text x="{cx}" y="{y+81}" font-size="10" font-weight="600" fill="{vfill}" text-anchor="middle">{vpfx}{vname}</text>')
+        p.append(f'<text x="{cx}" y="{y+93}" font-size="9.5" fill="{vfill}" text-anchor="middle">{vcity}</text>')
 
     elif layout == "third":
         if home or away:
-            p.append(f'<text x="{cx}" y="{y+20}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
-            p.append(f'<text x="{cx}" y="{y+37}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
+            p.append(f'<text x="{cx}" y="{y+20}" font-size="{hf}" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+37}" font-size="{af}" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
         else:
-            p.append(f'<text x="{cx}" y="{y+26}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>')
-        p.append(f'<text x="{cx}" y="{y+53}" font-size="10" fill="#7a8099" text-anchor="middle">{_hx(meta)}</text>')
-        p.append(f'<text x="{cx}" y="{y+67}" font-size="10" fill="{vfill}" text-anchor="middle">{venue_line}</text>')
+            p.append(f'<text x="{cx}" y="{y+27}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>')
+        p.append(f'<text x="{cx}" y="{y+52}" font-size="9.5" fill="#7a8099" text-anchor="middle">{meta}</text>')
+        p.append(f'<text x="{cx}" y="{y+65}" font-size="9.5" fill="{vfill}" text-anchor="middle">{vpfx}{vname}</text>')
+        p.append(f'<text x="{cx}" y="{y+77}" font-size="9.5" fill="{vfill}" text-anchor="middle">{vcity}</text>')
 
     elif layout == "center" and not (home or away):
-        # Pure TBD centred
-        p.append(f'<text x="{cx}" y="{y+26}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>')
-        p.append(f'<text x="{cx}" y="{y+46}" font-size="10" fill="#7a8099" text-anchor="middle">{_hx(meta)}</text>')
-        p.append(f'<text x="{cx}" y="{y+61}" font-size="10" fill="{vfill}" text-anchor="middle">{venue_line}</text>')
+        # Pure TBD — centred
+        p.append(f'<text x="{cx}" y="{y+28}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>')
+        p.append(f'<text x="{cx}" y="{y+47}" font-size="9.5" fill="#7a8099" text-anchor="middle">{meta}</text>')
+        p.append(f'<text x="{cx}" y="{y+61}" font-size="9.5" fill="{vfill}" text-anchor="middle">{vpfx}{vname}</text>')
+        p.append(f'<text x="{cx}" y="{y+74}" font-size="9.5" fill="{vfill}" text-anchor="middle">{vcity}</text>')
 
     else:
-        # Left-aligned (R32 both sides, or center once teams known)
+        # Left-aligned (R32 both sides, or center once teams are known)
         if has_score:
-            p += team_row(y+19, hc, hi, hw, hd, hg)
-            p += team_row(y+37, ac, ai, aw, ad, ag)
+            p.append(f'<text x="{x+10}" y="{y+18}" font-size="{hf}" fill="{hc}" {hi} {hw}>{hd}</text>')
+            p.append(f'<text x="{sx}" y="{y+18}" font-size="{hf}" fill="{hc}" font-weight="700" text-anchor="end">{hg}{suffix}</text>')
+            p.append(f'<text x="{x+10}" y="{y+36}" font-size="{af}" fill="{ac}" {ai} {aw}>{ad}</text>')
+            p.append(f'<text x="{sx}" y="{y+36}" font-size="{af}" fill="{ac}" font-weight="700" text-anchor="end">{ag}</text>')
         else:
-            p.append(f'<text x="{x+10}" y="{y+19}" font-size="14" fill="{hc}" {hi}>{hd}</text>')
-            p.append(f'<text x="{x+10}" y="{y+37}" font-size="14" fill="{ac}" {ai}>{ad}</text>')
-        p.append(f'<text x="{x+10}" y="{y+53}" font-size="10.5" fill="#7a8099">{_hx(meta)}</text>')
-        p.append(f'<text x="{x+10}" y="{y+68}" font-size="10" fill="{vfill}">{venue_line}</text>')
+            p.append(f'<text x="{x+10}" y="{y+18}" font-size="{hf}" fill="{hc}" {hi}>{hd}</text>')
+            p.append(f'<text x="{x+10}" y="{y+36}" font-size="{af}" fill="{ac}" {ai}>{ad}</text>')
+        p.append(f'<text x="{x+10}" y="{y+52}" font-size="10.5" fill="#7a8099">{meta}</text>')
+        p.append(f'<text x="{x+10}" y="{y+65}" font-size="10" fill="{vfill}">{vpfx}{vname}</text>')
+        p.append(f'<text x="{x+10}" y="{y+77}" font-size="9.5" fill="{vfill}">{vcity}</text>')
         if is_live:
             p.append(f'<circle cx="{x+w-10}" cy="{y+10}" r="4" fill="#f87171"/>')
 
@@ -702,11 +670,7 @@ def render_box(utc_key, x, y, w, h, layout, match, override_home=None, override_
 
 
 def build_bracket_page(matches, as_of_str):
-    """
-    Generate docs/index.html — the live knockout-stage bracket.
-    Teams, scores, and statuses update with each API refresh.
-    """
-    # Build lookup: utcDate[:16] → match object
+    """Generate docs/index.html — the live knockout-stage bracket."""
     by_utc = {}
     for m in matches:
         key = (m.get("utcDate") or "")[:16]
@@ -719,29 +683,18 @@ def build_bracket_page(matches, as_of_str):
         stage_counts[s] = stage_counts.get(s, 0) + 1
     print(f"  [HTML] Stage labels: {stage_counts}")
 
-    # Map slot index → match (for winner propagation)
-    slot_matches = {
-        i: by_utc.get(BRACKET_SLOTS[i][0])
-        for i in range(len(BRACKET_SLOTS))
-    }
-
-    # Derive team names for downstream slots from completed upstream matches.
-    # This fills in winner/loser names that the API hasn't propagated yet.
-    derived = _derive_bracket(slot_matches)
-    filled = sum(1 for v in derived.values() if any(v))
+    slot_matches = {i: by_utc.get(BRACKET_SLOTS[i][0]) for i in range(len(BRACKET_SLOTS))}
+    derived      = _derive_bracket(slot_matches)
+    filled       = sum(1 for v in derived.values() if any(v))
     print(f"  [HTML] Bracket slots with derived team names: {filled}")
 
-    # Render all bracket boxes
     boxes = []
     for i, (utc_key, x, y, w, h, layout) in enumerate(BRACKET_SLOTS):
-        match = slot_matches.get(i)
         ov_h, ov_a = derived.get(i, (None, None))
-        boxes.append(render_box(utc_key, x, y, w, h, layout, match, ov_h, ov_a))
+        boxes.append(render_box(utc_key, x, y, w, h, layout, slot_matches.get(i), ov_h, ov_a))
 
-    # 3rd-place label (above the box)
-    third_label = '<text x="738" y="1258" font-size="10" font-weight="700" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
-
-    boxes_svg = "\n".join(boxes)
+    third_label = '<text x="844" y="1326" font-size="10" font-weight="700" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
+    boxes_svg   = "\n".join(boxes)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -764,9 +717,7 @@ def build_bracket_page(matches, as_of_str):
     .page-header {{ text-align: center; margin-bottom: 1.75rem; }}
     .page-header h1 {{
       font-size: clamp(1.4rem, 3vw, 2rem);
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: .02em;
+      font-weight: 700; color: #fff; letter-spacing: .02em;
     }}
     .page-header h1 span {{ color: #f5a623; }}
     .page-header p {{ margin-top: .4rem; font-size: .85rem; color: #7a8099; }}
@@ -796,7 +747,7 @@ def build_bracket_page(matches, as_of_str):
   </div>
 </div>
 <div class="bracket-wrap">
-<svg viewBox="0 0 1476 1376"
+<svg viewBox="0 0 1688 1448"
      xmlns="http://www.w3.org/2000/svg"
      font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif">
 {_ROUND_LABELS}
@@ -815,14 +766,6 @@ def build_bracket_page(matches, as_of_str):
 </body>
 </html>
 """
-
-
-def ko_uid(utc_key):
-    """Stable UID for a knockout match event, keyed on its kickoff slot."""
-    h_ = hashlib.md5(utc_key.encode()).hexdigest()[:16]
-    return f"{h_}@worldcup2026-knockout"
-
-
 def build_calendar(matches, team_group, as_of_str):
     """
     Build the full .ics feed covering:
