@@ -760,7 +760,7 @@ def build_bracket_page(matches, as_of_str):
   Bracket connections between rounds are based on the official FIFA schedule.
   Teams, scores, and results update automatically with each refresh.
   &nbsp;·&nbsp; Subscribe to the full calendar (group + knockout):
-  <a href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics"
+  <a href="https://schen1119.github.io/World-Cup-2026-Calendar/world-cup-2026-group-stage.ics"
      style="color:#60a5fa">calendar feed</a>
 </p>
 </body>
