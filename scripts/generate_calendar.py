@@ -766,6 +766,12 @@ def build_bracket_page(matches, as_of_str):
 </body>
 </html>
 """
+def ko_uid(utc_key):
+    """Stable UID for a knockout match ICS event, keyed on its UTC kickoff slot."""
+    h_ = hashlib.md5(utc_key.encode()).hexdigest()[:16]
+    return f"{h_}@worldcup2026-knockout"
+
+
 def build_calendar(matches, team_group, as_of_str):
     """
     Build the full .ics feed covering:
