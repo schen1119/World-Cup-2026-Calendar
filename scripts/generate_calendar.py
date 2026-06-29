@@ -440,7 +440,81 @@ BRACKET_SLOTS = [
     ("2026-07-18T21:00",  658, 1060, 160, 62, "third"),
 ]
 
-# SVG connector paths — all coordinates derived from BRACKET_SLOTS above
+# Maps each downstream slot index to the two upstream slot indices that feed it.
+# Derived from the SVG connector paths — cross-verified against y-coordinate midpoints.
+# slot_index: (feeder_1, feeder_2) where feeder_1 provides the home team,
+#             feeder_2 provides the away team for that downstream match.
+BRACKET_PROGRESSION = {
+    # Left half: R32 → R16
+    8:  (0, 1),    # Left R16[0] ← Left R32[0] (Jun28) + Left R32[1] (Jun29 NRG)
+    9:  (2, 3),    # Left R16[1] ← Left R32[2] (Jun29 Gil) + Left R32[3] (Jun30 BBVA)
+    10: (4, 5),    # Left R16[2] ← Left R32[4] (Jun30 AT&T) + Left R32[5] (Jun30 MetLife)
+    11: (6, 7),    # Left R16[3] ← Left R32[6] (Jul1 Azteca) + Left R32[7] (Jul1 MBS)
+    # Left half: R16 → QF
+    12: (8, 9),    # Left QF[0] ← Left R16[0] + Left R16[1]
+    13: (10, 11),  # Left QF[1] ← Left R16[2] + Left R16[3]
+    # Left half: QF → SF
+    14: (12, 13),  # Left SF ← Left QF[0] + Left QF[1]
+    # Right half: R32 → R16
+    19: (23, 24),  # Right R16[0] ← Right R32[0] (Jul1 Lumen) + Right R32[1] (Jul2 Levi's)
+    20: (25, 26),  # Right R16[1] ← Right R32[2] (Jul2 SoFi) + Right R32[3] (Jul2 BMO)
+    21: (27, 28),  # Right R16[2] ← Right R32[4] (Jul3 BC) + Right R32[5] (Jul3 AT&T)
+    22: (29, 30),  # Right R16[3] ← Right R32[6] (Jul3 Hard Rock) + Right R32[7] (Jul4 Arrowhead)
+    # Right half: R16 → QF
+    17: (19, 20),  # Right QF[0] ← Right R16[0] + Right R16[1]
+    18: (21, 22),  # Right QF[1] ← Right R16[2] + Right R16[3]
+    # Right half: QF → SF
+    16: (17, 18),  # Right SF ← Right QF[0] + Right QF[1]
+    # Final and 3rd Place
+    15: (14, 16),  # Final ← Left SF (14) + Right SF (16)
+    31: (14, 16),  # 3rd Place ← Losers of Left SF (14) + Right SF (16)
+}
+
+
+def _winner_name(match):
+    """Return the name of the winning team from a finished match, or None."""
+    if not match or match.get("status") not in FINISHED_STATUSES:
+        return None
+    w = (match.get("score") or {}).get("winner", "")
+    if w == "HOME_TEAM":
+        return ((match.get("homeTeam") or {}).get("name") or "").strip() or None
+    if w == "AWAY_TEAM":
+        return ((match.get("awayTeam") or {}).get("name") or "").strip() or None
+    return None  # draw (shouldn't happen in knockout)
+
+
+def _loser_name(match):
+    """Return the name of the losing team from a finished match, or None."""
+    if not match or match.get("status") not in FINISHED_STATUSES:
+        return None
+    w = (match.get("score") or {}).get("winner", "")
+    if w == "HOME_TEAM":
+        return ((match.get("awayTeam") or {}).get("name") or "").strip() or None
+    if w == "AWAY_TEAM":
+        return ((match.get("homeTeam") or {}).get("name") or "").strip() or None
+    return None
+
+
+def _derive_bracket(slot_matches):
+    """
+    Given a dict {slot_index: match}, return a dict {slot_index: (home_name, away_name)}
+    with derived team names for slots where the API shows TBD teams but we can
+    compute the winner from a completed upstream match.
+    3rd-place slot uses losers rather than winners.
+    """
+    derived = {}
+    for dest, (src1, src2) in BRACKET_PROGRESSION.items():
+        m1 = slot_matches.get(src1)
+        m2 = slot_matches.get(src2)
+        if dest == 31:
+            h = _loser_name(m1)
+            a = _loser_name(m2)
+        else:
+            h = _winner_name(m1)
+            a = _winner_name(m2)
+        if h or a:
+            derived[dest] = (h, a)
+    return derived
 _CONNECTORS = """\
 <g stroke="#2a3d5c" stroke-width="1.75" fill="none">
   <path d="M142,98 H154 V222 M142,222 H154 M154,160 H166"/>
@@ -482,7 +556,7 @@ def _hx(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
-def render_box(utc_key, x, y, w, h, layout, match):
+def render_box(utc_key, x, y, w, h, layout, match, override_home=None, override_away=None):
     """
     Return SVG string for one bracket slot.
     match may be None if no API data found for this slot.
@@ -492,6 +566,13 @@ def render_box(utc_key, x, y, w, h, layout, match):
     away_obj = (m.get("awayTeam") or {})
     home = (home_obj.get("name") or "").strip()
     away = (away_obj.get("name") or "").strip()
+
+    # If the API still shows TBD for a team but we've derived the winner
+    # from a completed upstream match, substitute the derived name.
+    if not home and override_home:
+        home = override_home
+    if not away and override_away:
+        away = override_away
 
     status = m.get("status", "")
     score_data = m.get("score") or {}
@@ -632,11 +713,24 @@ def build_bracket_page(matches, as_of_str):
         stage_counts[s] = stage_counts.get(s, 0) + 1
     print(f"  [HTML] Stage labels: {stage_counts}")
 
+    # Map slot index → match (for winner propagation)
+    slot_matches = {
+        i: by_utc.get(BRACKET_SLOTS[i][0])
+        for i in range(len(BRACKET_SLOTS))
+    }
+
+    # Derive team names for downstream slots from completed upstream matches.
+    # This fills in winner/loser names that the API hasn't propagated yet.
+    derived = _derive_bracket(slot_matches)
+    filled = sum(1 for v in derived.values() if any(v))
+    print(f"  [HTML] Bracket slots with derived team names: {filled}")
+
     # Render all bracket boxes
     boxes = []
-    for (utc_key, x, y, w, h, layout) in BRACKET_SLOTS:
-        match = by_utc.get(utc_key)
-        boxes.append(render_box(utc_key, x, y, w, h, layout, match))
+    for i, (utc_key, x, y, w, h, layout) in enumerate(BRACKET_SLOTS):
+        match = slot_matches.get(i)
+        ov_h, ov_a = derived.get(i, (None, None))
+        boxes.append(render_box(utc_key, x, y, w, h, layout, match, ov_h, ov_a))
 
     # 3rd-place label (above the box)
     third_label = '<text x="738" y="1044" font-size="10" font-weight="700" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
