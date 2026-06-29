@@ -517,26 +517,26 @@ def _derive_bracket(slot_matches):
     return derived
 _CONNECTORS = """\
 <g stroke="#2a3d5c" stroke-width="1.75" fill="none">
-  <path d="M142,98 H154 V222 M142,222 H154 M154,160 H166"/>
-  <path d="M142,346 H154 V470 M142,470 H154 M154,408 H166"/>
-  <path d="M142,594 H154 V718 M142,718 H154 M154,656 H166"/>
-  <path d="M142,842 H154 V966 M142,966 H154 M154,904 H166"/>
-  <path d="M306,160 H318 V408 M306,408 H318 M318,284 H330"/>
-  <path d="M306,656 H318 V904 M306,904 H318 M318,780 H330"/>
-  <path d="M470,284 H482 V780 M470,780 H482 M482,532 H494"/>
-  <line x1="634" y1="532" x2="658" y2="532"/>
-  <line x1="818" y1="532" x2="842" y2="532"/>
-  <path d="M1006,284 H994 V780 M1006,780 H994 M994,532 H982"/>
-  <path d="M1170,160 H1158 V408 M1170,408 H1158 M1158,284 H1146"/>
-  <path d="M1170,656 H1158 V904 M1170,904 H1158 M1158,780 H1146"/>
-  <path d="M1334,98 H1322 V222 M1334,222 H1322 M1322,160 H1310"/>
-  <path d="M1334,346 H1322 V470 M1334,470 H1322 M1322,408 H1310"/>
-  <path d="M1334,594 H1322 V718 M1334,718 H1322 M1322,656 H1310"/>
-  <path d="M1334,842 H1322 V966 M1334,966 H1322 M1322,904 H1310"/>
-  <line x1="564" y1="563" x2="564" y2="1058" stroke-dasharray="6,4"/>
-  <line x1="912" y1="563" x2="912" y2="1058" stroke-dasharray="6,4"/>
-  <line x1="564" y1="1058" x2="658" y2="1058"/>
-  <line x1="912" y1="1058" x2="818" y2="1058"/>
+  <path d="M142,112 H154 V264 M142,264 H154 M154,188 H166"/>
+  <path d="M142,416 H154 V568 M142,568 H154 M154,492 H166"/>
+  <path d="M142,720 H154 V872 M142,872 H154 M154,796 H166"/>
+  <path d="M142,1024 H154 V1176 M142,1176 H154 M154,1100 H166"/>
+  <path d="M306,188 H318 V492 M306,492 H318 M318,340 H330"/>
+  <path d="M306,796 H318 V1100 M306,1100 H318 M318,948 H330"/>
+  <path d="M470,340 H482 V948 M470,948 H482 M482,644 H494"/>
+  <line x1="634" y1="644" x2="658" y2="644"/>
+  <line x1="818" y1="644" x2="842" y2="644"/>
+  <path d="M1006,340 H994 V948 M1006,948 H994 M994,644 H982"/>
+  <path d="M1170,188 H1158 V492 M1170,492 H1158 M1158,340 H1146"/>
+  <path d="M1170,796 H1158 V1100 M1170,1100 H1158 M1158,948 H1146"/>
+  <path d="M1334,112 H1322 V264 M1334,264 H1322 M1322,188 H1310"/>
+  <path d="M1334,416 H1322 V568 M1334,568 H1322 M1322,492 H1310"/>
+  <path d="M1334,720 H1322 V872 M1334,872 H1322 M1322,796 H1310"/>
+  <path d="M1334,1024 H1322 V1176 M1334,1176 H1322 M1322,1100 H1310"/>
+  <line x1="564" y1="682" x2="564" y2="1268" stroke-dasharray="6,4"/>
+  <line x1="912" y1="682" x2="912" y2="1268" stroke-dasharray="6,4"/>
+  <line x1="564" y1="1268" x2="658" y2="1268"/>
+  <line x1="912" y1="1268" x2="818" y2="1268"/>
 </g>"""
 
 _ROUND_LABELS = """\
@@ -646,6 +646,9 @@ def render_box(utc_key, x, y, w, h, layout, match, override_home=None, override_
     cx = x + w // 2
     sx = x + w - 8   # score right-edge x
 
+    # Full venue line shown at the bottom of every box
+    venue_line = _hx(f"\u2605 {venue_full}") if (is_ml and venue_full) else _hx(venue_full)
+
     def team_row(ty, tc, ti, tw_, td, score_val):
         row = [f'<text x="{x+10}" y="{ty}" font-size="14" fill="{tc}" {ti} {tw_}>{td}</text>']
         if score_val is not None:
@@ -653,42 +656,45 @@ def render_box(utc_key, x, y, w, h, layout, match, override_home=None, override_
         return row
 
     if layout == "final":
-        # 80px tall Final box: home / vs / away / venue
+        # 92px tall Final box: home / vs / away / date / venue
         if has_score:
-            p.append(f'<text x="{cx-10}" y="{y+24}" font-size="13" fill="{hc}" {hi} text-anchor="end">{hd}</text>')
-            p.append(f'<text x="{cx+10}" y="{y+24}" font-size="13" fill="{hc}" font-weight="700" text-anchor="start">{hg}</text>')
-            p.append(f'<text x="{cx}"    y="{y+42}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
-            p.append(f'<text x="{cx-10}" y="{y+60}" font-size="13" fill="{ac}" {ai} text-anchor="end">{ad}</text>')
-            p.append(f'<text x="{cx+10}" y="{y+60}" font-size="13" fill="{ac}" font-weight="700" text-anchor="start">{ag}</text>')
+            p.append(f'<text x="{cx-10}" y="{y+22}" font-size="13" fill="{hc}" {hi} text-anchor="end">{hd}</text>')
+            p.append(f'<text x="{cx+10}" y="{y+22}" font-size="13" fill="{hc}" font-weight="700" text-anchor="start">{hg}</text>')
+            p.append(f'<text x="{cx}"    y="{y+38}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx-10}" y="{y+54}" font-size="13" fill="{ac}" {ai} text-anchor="end">{ad}</text>')
+            p.append(f'<text x="{cx+10}" y="{y+54}" font-size="13" fill="{ac}" font-weight="700" text-anchor="start">{ag}</text>')
         else:
-            p.append(f'<text x="{cx}" y="{y+24}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
-            p.append(f'<text x="{cx}" y="{y+42}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
-            p.append(f'<text x="{cx}" y="{y+60}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
-        p.append(f'<text x="{cx}" y="{y+74}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(vname)}</text>')
+            p.append(f'<text x="{cx}" y="{y+22}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+38}" font-size="10" fill="#7a8099" text-anchor="middle">vs</text>')
+            p.append(f'<text x="{cx}" y="{y+54}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
+        p.append(f'<text x="{cx}" y="{y+70}" font-size="10" fill="#7a8099" text-anchor="middle">{_hx(meta)}</text>')
+        p.append(f'<text x="{cx}" y="{y+84}" font-size="10" font-weight="600" fill="{vfill}" text-anchor="middle">{venue_line}</text>')
 
     elif layout == "third":
         if home or away:
-            p.append(f'<text x="{cx}" y="{y+24}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
-            p.append(f'<text x="{cx}" y="{y+42}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
-            p.append(f'<text x="{cx}" y="{y+57}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
+            p.append(f'<text x="{cx}" y="{y+20}" font-size="13" fill="{hc}" {hi} text-anchor="middle">{hd}</text>')
+            p.append(f'<text x="{cx}" y="{y+37}" font-size="13" fill="{ac}" {ai} text-anchor="middle">{ad}</text>')
         else:
-            p.append(f'<text x="{cx}" y="{y+28}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>')
-            p.append(f'<text x="{cx}" y="{y+48}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
+            p.append(f'<text x="{cx}" y="{y+26}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD vs TBD</text>')
+        p.append(f'<text x="{cx}" y="{y+53}" font-size="10" fill="#7a8099" text-anchor="middle">{_hx(meta)}</text>')
+        p.append(f'<text x="{cx}" y="{y+67}" font-size="10" fill="{vfill}" text-anchor="middle">{venue_line}</text>')
 
     elif layout == "center" and not (home or away):
         # Pure TBD centred
-        p.append(f'<text x="{cx}" y="{y+28}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>')
-        p.append(f'<text x="{cx}" y="{y+48}" font-size="10" fill="{vfill}" {vfw} text-anchor="middle">{vpfx}{_hx(meta)}</text>')
+        p.append(f'<text x="{cx}" y="{y+26}" font-size="13" font-style="italic" fill="#6b7280" text-anchor="middle">TBD</text>')
+        p.append(f'<text x="{cx}" y="{y+46}" font-size="10" fill="#7a8099" text-anchor="middle">{_hx(meta)}</text>')
+        p.append(f'<text x="{cx}" y="{y+61}" font-size="10" fill="{vfill}" text-anchor="middle">{venue_line}</text>')
 
     else:
         # Left-aligned (R32 both sides, or center once teams known)
         if has_score:
-            p += team_row(y+21, hc, hi, hw, hd, hg)
-            p += team_row(y+40, ac, ai, aw, ad, ag)
+            p += team_row(y+19, hc, hi, hw, hd, hg)
+            p += team_row(y+37, ac, ai, aw, ad, ag)
         else:
-            p.append(f'<text x="{x+10}" y="{y+21}" font-size="14" fill="{hc}" {hi}>{hd}</text>')
-            p.append(f'<text x="{x+10}" y="{y+40}" font-size="14" fill="{ac}" {ai}>{ad}</text>')
-        p.append(f'<text x="{x+10}" y="{y+56}" font-size="10.5" fill="{vfill}" {vfw}>{vpfx}{_hx(meta)}</text>')
+            p.append(f'<text x="{x+10}" y="{y+19}" font-size="14" fill="{hc}" {hi}>{hd}</text>')
+            p.append(f'<text x="{x+10}" y="{y+37}" font-size="14" fill="{ac}" {ai}>{ad}</text>')
+        p.append(f'<text x="{x+10}" y="{y+53}" font-size="10.5" fill="#7a8099">{_hx(meta)}</text>')
+        p.append(f'<text x="{x+10}" y="{y+68}" font-size="10" fill="{vfill}">{venue_line}</text>')
         if is_live:
             p.append(f'<circle cx="{x+w-10}" cy="{y+10}" r="4" fill="#f87171"/>')
 
@@ -733,7 +739,7 @@ def build_bracket_page(matches, as_of_str):
         boxes.append(render_box(utc_key, x, y, w, h, layout, match, ov_h, ov_a))
 
     # 3rd-place label (above the box)
-    third_label = '<text x="738" y="1044" font-size="10" font-weight="700" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
+    third_label = '<text x="738" y="1258" font-size="10" font-weight="700" fill="#7a8099" text-anchor="middle" letter-spacing=".07em">3RD PLACE</text>'
 
     boxes_svg = "\n".join(boxes)
 
@@ -790,7 +796,7 @@ def build_bracket_page(matches, as_of_str):
   </div>
 </div>
 <div class="bracket-wrap">
-<svg viewBox="0 0 1476 1150"
+<svg viewBox="0 0 1476 1376"
      xmlns="http://www.w3.org/2000/svg"
      font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif">
 {_ROUND_LABELS}
