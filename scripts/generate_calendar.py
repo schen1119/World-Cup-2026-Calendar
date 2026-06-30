@@ -449,10 +449,41 @@ BRACKET_PROGRESSION = {
 }
 
 
-def _winner_name(match):
+def _winner_side(match):
+    """
+    Determine which side won a finished knockout match: 'HOME_TEAM', 'AWAY_TEAM', or None.
+    Falls back through multiple signals because football-data.org doesn't always
+    populate score.winner reliably for matches decided on penalties:
+      1. score.winner field, if it's a valid value
+      2. penalties score comparison (if duration == PENALTY_SHOOTOUT or penalties present)
+      3. extra-time aggregate score comparison
+      4. full-time score comparison (regulation)
+    """
     if not match or match.get("status") not in FINISHED_STATUSES:
         return None
-    w = (match.get("score") or {}).get("winner", "")
+    score = match.get("score") or {}
+
+    w = score.get("winner")
+    if w in ("HOME_TEAM", "AWAY_TEAM"):
+        return w
+
+    pens = score.get("penalties") or {}
+    ph, pa = pens.get("home"), pens.get("away")
+    if ph is not None and pa is not None and ph != pa:
+        return "HOME_TEAM" if ph > pa else "AWAY_TEAM"
+
+    et = score.get("extraTime") or {}
+    ft = score.get("fullTime") or {}
+    eh = (ft.get("home") or 0) + (et.get("home") or 0)
+    ea = (ft.get("away") or 0) + (et.get("away") or 0)
+    if eh != ea:
+        return "HOME_TEAM" if eh > ea else "AWAY_TEAM"
+
+    return None  # genuinely undetermined (shouldn't happen in a knockout match)
+
+
+def _winner_name(match):
+    w = _winner_side(match)
     if w == "HOME_TEAM":
         return ((match.get("homeTeam") or {}).get("name") or "").strip() or None
     if w == "AWAY_TEAM":
@@ -461,9 +492,7 @@ def _winner_name(match):
 
 
 def _loser_name(match):
-    if not match or match.get("status") not in FINISHED_STATUSES:
-        return None
-    w = (match.get("score") or {}).get("winner", "")
+    w = _winner_side(match)
     if w == "HOME_TEAM":
         return ((match.get("awayTeam") or {}).get("name") or "").strip() or None
     if w == "AWAY_TEAM":
@@ -549,7 +578,7 @@ def render_box(utc_key, x, y, w, h, layout, match, override_home=None, override_
     score_data = m.get("score") or {}
     ft         = score_data.get("fullTime") or {}
     cs         = score_data.get("currentScore") or score_data.get("halfTime") or {}
-    winner     = score_data.get("winner", "")
+    winner     = _winner_side(m) or ""
     duration   = score_data.get("duration", "REGULAR")
 
     if status in FINISHED_STATUSES:
@@ -760,7 +789,7 @@ def build_bracket_page(matches, as_of_str):
   Bracket connections between rounds are based on the official FIFA schedule.
   Teams, scores, and results update automatically with each refresh.
   &nbsp;·&nbsp; Subscribe to the full calendar (group + knockout):
-  <a href="https://schen1119.github.io/World-Cup-2026-Calendar/world-cup-2026-group-stage.ics"
+  <a href="webcal://YOUR-USERNAME.github.io/YOUR-REPO/world-cup-2026-group-stage.ics"
      style="color:#60a5fa">calendar feed</a>
 </p>
 </body>
