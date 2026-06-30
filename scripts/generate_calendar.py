@@ -396,14 +396,20 @@ STAGE_LABELS = {
 
 BRACKET_SLOTS = [
     # Left R32 (x=2, w=164, h=80)
-    ("2026-06-28T19:00",    2,   76, 164, 80, "left"),
-    ("2026-06-29T17:00",    2,  236, 164, 80, "left"),
-    ("2026-06-29T20:30",    2,  396, 164, 80, "left"),
-    ("2026-06-30T01:00",    2,  556, 164, 80, "left"),
-    ("2026-06-30T17:00",    2,  716, 164, 80, "left"),
-    ("2026-06-30T21:00",    2,  876, 164, 80, "left"),   # MetLife
-    ("2026-07-01T01:00",    2, 1036, 164, 80, "left"),
-    ("2026-07-01T16:00",    2, 1196, 164, 80, "left"),
+    # Reordered (not chronological) so each adjacent pair is the TRUE Round of 16
+    # pairing per FIFA's official bracket, verified against confirmed reporting:
+    #   pos0+1 -> R16 Houston Jul4 1pm  : Canada           vs Morocco
+    #   pos2+3 -> R16 Philly  Jul4 5pm  : Germany/Paraguay vs France/Sweden
+    #   pos4+5 -> R16 MetLife Jul5 4pm  : Brazil           vs Ivory Coast/Norway
+    #   pos6+7 -> R16 Mex.City Jul5 8pm : Mexico/Ecuador   vs England/DR Congo
+    ("2026-06-28T19:00",    2,   76, 164, 80, "left"),   # South Africa-Canada
+    ("2026-06-30T01:00",    2,  236, 164, 80, "left"),   # Netherlands-Morocco
+    ("2026-06-29T20:30",    2,  396, 164, 80, "left"),   # Germany-Paraguay
+    ("2026-06-30T21:00",    2,  556, 164, 80, "left"),   # France-Sweden (MetLife)
+    ("2026-06-29T17:00",    2,  716, 164, 80, "left"),   # Brazil-Japan
+    ("2026-06-30T17:00",    2,  876, 164, 80, "left"),   # Ivory Coast-Norway
+    ("2026-07-01T01:00",    2, 1036, 164, 80, "left"),   # Mexico-Ecuador
+    ("2026-07-01T16:00",    2, 1196, 164, 80, "left"),   # England-Congo DR
     # Left R16 (x=190)
     ("2026-07-04T17:00",  190,  156, 164, 80, "center"),
     ("2026-07-04T21:00",  190,  476, 164, 80, "center"),
@@ -427,13 +433,18 @@ BRACKET_SLOTS = [
     ("2026-07-07T16:00", 1334,  796, 164, 80, "center"),
     ("2026-07-07T20:00", 1334, 1116, 164, 80, "center"),
     # Right R32 (x=1522)
-    ("2026-07-01T20:00", 1522,   76, 164, 80, "left"),
-    ("2026-07-02T00:00", 1522,  236, 164, 80, "left"),
-    ("2026-07-02T19:00", 1522,  396, 164, 80, "left"),
-    ("2026-07-02T23:00", 1522,  556, 164, 80, "left"),
-    ("2026-07-03T03:00", 1522,  716, 164, 80, "left"),
-    ("2026-07-03T18:00", 1522,  876, 164, 80, "left"),
-    ("2026-07-03T22:00", 1522, 1036, 164, 80, "left"),
+    # Reordered so each adjacent pair is the TRUE Round of 16 pairing, verified:
+    #   pos0+1 -> R16 Dallas  Jul6 3pm  : Spain/Austria      vs Portugal/Croatia
+    #   pos2+3 -> R16 Seattle Jul6 8pm  : Belgium/Senegal    vs USA/Bosnia
+    #   pos4+5 -> R16 Atlanta Jul7 12pm : Australia/Egypt    vs Argentina/Cape Verde
+    #   pos6+7 -> R16 Vancouver Jul7 4pm: Switzerland/Algeria vs Colombia/Ghana
+    ("2026-07-02T19:00", 1522,   76, 164, 80, "left"),   # Spain-Austria
+    ("2026-07-02T23:00", 1522,  236, 164, 80, "left"),   # Portugal-Croatia
+    ("2026-07-01T20:00", 1522,  396, 164, 80, "left"),   # Belgium-Senegal
+    ("2026-07-02T00:00", 1522,  556, 164, 80, "left"),   # United States-Bosnia & Herz.
+    ("2026-07-03T18:00", 1522,  716, 164, 80, "left"),   # Australia-Egypt
+    ("2026-07-03T22:00", 1522,  876, 164, 80, "left"),   # Argentina-Cape Verde Islands
+    ("2026-07-03T03:00", 1522, 1036, 164, 80, "left"),   # Switzerland-Algeria
     ("2026-07-04T01:30", 1522, 1196, 164, 80, "left"),
     # 3rd Place (x=754, same width as Final)
     ("2026-07-18T21:00",  754, 1338, 180, 80, "third"),
