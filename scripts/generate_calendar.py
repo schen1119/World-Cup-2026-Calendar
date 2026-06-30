@@ -905,6 +905,22 @@ def build_calendar(matches, team_group, as_of_str):
                         sa["D"] += 1; sa["Pts"] += 1
 
     # ── Knockout stage ─────────────────────────────────────────────────────────
+    # Build the same slot→match map and derived-winner overrides used by the
+    # HTML bracket, so the .ics feed shows propagated winners (e.g. a penalty-
+    # shootout winner the API hasn't pushed downstream yet) instead of stale TBDs.
+    by_utc_ko = {}
+    for m in matches:
+        key = (m.get("utcDate") or "")[:16]
+        if key:
+            by_utc_ko[key] = m
+    ko_slot_matches = {i: by_utc_ko.get(BRACKET_SLOTS[i][0]) for i in range(len(BRACKET_SLOTS))}
+    ko_derived      = _derive_bracket(ko_slot_matches)
+    # utc_key -> (override_home, override_away)
+    ko_overrides = {
+        BRACKET_SLOTS[i][0]: ko_derived[i]
+        for i in ko_derived
+    }
+
     et_tz = now_eastern().tzinfo
     for match in sorted(matches, key=lambda m: m.get("utcDate", "")):
         stage = (match.get("stage") or "").upper()
@@ -916,8 +932,17 @@ def build_calendar(matches, team_group, as_of_str):
 
         home_obj = match.get("homeTeam") or {}
         away_obj = match.get("awayTeam") or {}
-        home_nm  = (home_obj.get("name") or "").strip() or "TBD"
-        away_nm  = (away_obj.get("name") or "").strip() or "TBD"
+        home_nm  = (home_obj.get("name") or "").strip()
+        away_nm  = (away_obj.get("name") or "").strip()
+
+        # Apply derived winner/loser names where the API still shows TBD
+        ov_home, ov_away = ko_overrides.get(utc_key, (None, None))
+        if not home_nm and ov_home:
+            home_nm = ov_home
+        if not away_nm and ov_away:
+            away_nm = ov_away
+        home_nm = home_nm or "TBD"
+        away_nm = away_nm or "TBD"
 
         kickoff = datetime.datetime.fromisoformat(
             (match.get("utcDate") or "2026-01-01T00:00:00Z").replace("Z", "+00:00")
